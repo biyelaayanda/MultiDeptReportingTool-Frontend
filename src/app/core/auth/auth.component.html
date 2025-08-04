@@ -1,0 +1,70 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Multi-Department Reporting Tool</h2>
+    <p>Please log in to access your dashboard</p>
+    
+    <form class="auth-form" (ngSubmit)="onSubmit()" #loginFormRef="ngForm">
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input 
+          type="text" 
+          id="username" 
+          name="username" 
+          [(ngModel)]="loginForm.username"
+          required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="loginForm.password"
+          required>
+      </div>
+      
+      <div class="form-group">
+        <label for="role">Role:</label>
+        <select 
+          id="role" 
+          name="role" 
+          [(ngModel)]="loginForm.role"
+          required>
+          <option value="">Select your role</option>
+          <option value="admin">Admin</option>
+          <option value="department-lead">Department Lead</option>
+          <option value="executive">Executive</option>
+          <option value="staff">Staff User</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="error">
+        <div class="error-message">{{ error }}</div>
+      </div>
+      
+      <button 
+        type="submit" 
+        class="login-btn"
+        [disabled]="isLoading || !loginFormRef.form.valid">
+        {{ isLoading ? 'Logging in...' : 'Login' }}
+      </button>
+    </form>
+
+    <div class="register-link">
+      <p>Don't have an account? 
+        <button type="button" class="link-btn" (click)="goToRegister()">
+          Create one here
+        </button>
+      </p>
+    </div>
+
+    <div class="demo-credentials">
+      <h4>Demo Credentials:</h4>
+      <p><strong>Admin:</strong> admin / admin123</p>
+      <p><strong>Dept Lead:</strong> deptlead / dept123</p>
+      <p><strong>Executive:</strong> executive / exec123</p>
+      <p><strong>Staff:</strong> staff / staff123</p>
+    </div>
+  </div>
+</div>
