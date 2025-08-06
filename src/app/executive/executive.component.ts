@@ -822,17 +822,14 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
       case ExportFormat.PDF:
         formatString = 'pdf';
         break;
-      case ExportFormat.Excel:
-        formatString = 'excel';
-        break;
-      case ExportFormat.PowerPoint:
-        formatString = 'powerpoint';
-        break;
       case ExportFormat.CSV:
         formatString = 'csv';
         break;
       case ExportFormat.JSON:
         formatString = 'json';
+        break;
+      case ExportFormat.PowerPoint:
+        formatString = 'powerpoint';
         break;
       default:
         formatString = 'pdf';
@@ -945,14 +942,12 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
     switch (format) {
       case ExportFormat.PDF:
         return 'PDF';
-      case ExportFormat.Excel:
-        return 'Excel';
-      case ExportFormat.PowerPoint:
-        return 'PowerPoint';
       case ExportFormat.CSV:
         return 'CSV';
       case ExportFormat.JSON:
         return 'JSON';
+      case ExportFormat.PowerPoint:
+        return 'PowerPoint';
       default:
         return 'PDF';
     }
