@@ -24,7 +24,23 @@ import { environment } from '../../environments/environment';
 export class ExecutiveComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
-  // Dashboard Data
+    // Notification methods for better UX
+  showNotification(message: string, type: 'success' | 'error' | 'info'): void {
+    this.exportNotification = { message, type };
+    
+    // Auto-clear success notifications after 5 seconds
+    if (type === 'success') {
+      setTimeout(() => {
+        this.clearNotification();
+      }, 5000);
+    }
+  }
+  
+  clearNotification(): void {
+    this.exportNotification = null;
+  }
+
+  // Existing loadDashboardData method...
   dashboardData: ExecutiveDashboardDto | null = null;
   businessIntelligence: BusinessIntelligenceDto | null = null;
   isLoading = true;
@@ -44,6 +60,11 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
   selectedDepartment = 'all';
   refreshInterval: any;
   lastRefresh = new Date();
+  
+  // Export State
+  isExporting = false;
+  exportingFormat: string = '';
+  exportNotification: { message: string; type: 'success' | 'error' | 'info' } | null = null;
   
   // Export enum for template access
   readonly ExportFormats = ExportFormat;
@@ -778,10 +799,21 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
 
   exportDashboard(format: ExportFormat) {
     console.log('Export dashboard called with format:', format);
+    
     if (!this.dashboardData) {
-      console.log('No dashboard data available');
+      this.showNotification('No dashboard data available for export', 'error');
       return;
     }
+
+    if (this.isExporting) {
+      this.showNotification('Export already in progress. Please wait...', 'info');
+      return;
+    }
+
+    // Set loading state
+    this.isExporting = true;
+    this.exportingFormat = format.toString();
+    this.showNotification(`Preparing ${format} export...`, 'info');
 
     // Calculate date range like we do for dashboard data
     const endDate = new Date();
@@ -845,6 +877,9 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
       responseType: 'blob'
     }).subscribe({
       next: (blob: Blob) => {
+        this.isExporting = false;
+        this.exportingFormat = '';
+        
         // Handle successful export - backend returns file directly
         if (blob && blob.size > 0) {
           const url = window.URL.createObjectURL(blob);
@@ -858,14 +893,30 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
           a.download = `dashboard-export-${new Date().toISOString().split('T')[0]}.${actualExtension}`;
           a.click();
           window.URL.revokeObjectURL(url);
+          
+          this.showNotification(`${format} export completed successfully!`, 'success');
           console.log('Export successful!');
         } else {
+          this.showNotification('Export failed: Empty file received', 'error');
           console.error('Export failed: Empty file received');
         }
       },
       error: (err: any) => {
+        this.isExporting = false;
+        this.exportingFormat = '';
+        
         console.error('Export failed:', err);
-        alert('Export failed. Please try again.');
+        let errorMessage = 'Export failed. Please try again.';
+        
+        if (err.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (err.status === 500) {
+          errorMessage = 'Server error occurred. Please try again later.';
+        } else if (err.error?.message) {
+          errorMessage = `Export failed: ${err.error.message}`;
+        }
+        
+        this.showNotification(errorMessage, 'error');
       }
     });
   }
