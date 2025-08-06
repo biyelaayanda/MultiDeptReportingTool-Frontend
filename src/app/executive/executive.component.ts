@@ -45,6 +45,11 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
   refreshInterval: any;
   lastRefresh = new Date();
   
+  // Export notification state
+  exportNotification: { type: 'success' | 'error' | 'info', message: string } | null = null;
+  isExporting = false;
+  exportingFormat = '';
+  
   // Export enum for template access
   readonly ExportFormats = ExportFormat;
 
@@ -780,8 +785,15 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
     console.log('Export dashboard called with format:', format);
     if (!this.dashboardData) {
       console.log('No dashboard data available');
+      this.showNotification('error', 'No dashboard data available for export');
       return;
     }
+
+    // Set loading state
+    this.isExporting = true;
+    this.exportingFormat = this.getFormatDisplayName(format);
+    this.clearNotification();
+    this.showNotification('info', `Preparing ${this.exportingFormat} export...`);
 
     // Calculate date range like we do for dashboard data
     const endDate = new Date();
@@ -859,13 +871,19 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
           a.click();
           window.URL.revokeObjectURL(url);
           console.log('Export successful!');
+          this.showNotification('success', `${this.exportingFormat} export completed successfully!`);
         } else {
           console.error('Export failed: Empty file received');
+          this.showNotification('error', 'Export failed: Empty file received');
         }
+        this.isExporting = false;
+        this.exportingFormat = '';
       },
       error: (err: any) => {
         console.error('Export failed:', err);
-        alert('Export failed. Please try again.');
+        this.showNotification('error', `${this.exportingFormat} export failed. Please try again.`);
+        this.isExporting = false;
+        this.exportingFormat = '';
       }
     });
   }
@@ -906,5 +924,37 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
       return kpi.isHealthy ? 'text-danger' : 'text-success';
     }
     return 'text-secondary';
+  }
+
+  showNotification(type: 'success' | 'error' | 'info', message: string) {
+    this.exportNotification = { type, message };
+    
+    // Auto-dismiss success and info notifications after 5 seconds
+    if (type === 'success' || type === 'info') {
+      setTimeout(() => {
+        this.clearNotification();
+      }, 5000);
+    }
+  }
+
+  clearNotification() {
+    this.exportNotification = null;
+  }
+
+  getFormatDisplayName(format: ExportFormat): string {
+    switch (format) {
+      case ExportFormat.PDF:
+        return 'PDF';
+      case ExportFormat.Excel:
+        return 'Excel';
+      case ExportFormat.PowerPoint:
+        return 'PowerPoint';
+      case ExportFormat.CSV:
+        return 'CSV';
+      case ExportFormat.JSON:
+        return 'JSON';
+      default:
+        return 'PDF';
+    }
   }
 }
