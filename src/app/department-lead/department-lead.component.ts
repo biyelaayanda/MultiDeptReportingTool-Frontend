@@ -120,9 +120,32 @@ export class DepartmentLeadComponent implements OnInit, OnDestroy {
   }
 
   determineDepartment() {
-    // For development: use IT as default
-    // In production, this should come from user profile/JWT token
-    this.userDepartment = 'IT'; // Default for testing
+    // Extract department from JWT token
+    const token = this.authService.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const departmentId = payload.DepartmentId;
+        
+        // Map department IDs to API endpoint names (controller names)
+        const departmentMap: { [key: string]: string } = {
+          '1': 'Finance',
+          '2': 'HR', // API endpoint is /api/HR/ 
+          '3': 'Operations', 
+          '4': 'Compliance',
+          '5': 'IT' // API endpoint is /api/IT/
+        };
+        
+        this.userDepartment = departmentMap[departmentId] || 'IT';
+        console.log(`Department determined from token: ${this.userDepartment} (ID: ${departmentId})`);
+      } catch (error) {
+        console.error('Error parsing token for department:', error);
+        this.userDepartment = 'IT'; // Default fallback
+      }
+    } else {
+      this.userDepartment = 'IT'; // Default fallback
+    }
+    
     this.loadDashboardData();
   }
 
