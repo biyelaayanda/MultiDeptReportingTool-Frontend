@@ -1,3 +1,793 @@
-<p>
-  reporting works!
-</p>
+<!-- Reports Management Component -->
+<div class="reports-container">
+  <!-- Header -->
+  <div class="reports-header mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <div class="d-flex align-items-center mb-2">
+          <button class="btn btn-outline-secondary me-3" (click)="navigateBack()" title="Back to Dashboard">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+          </button>
+          <h2 class="page-title mb-0">
+            <i class="fas fa-file-alt me-2"></i>Reports Management
+            <span class="badge bg-primary ms-2">{{totalReports}} Total</span>
+          </h2>
+        </div>
+        <p class="text-muted mb-0">Manage and track all department reports</p>
+      </div>
+      <div class="col-md-6 text-end">
+        <div class="btn-group me-2" aria-label="View selection">
+          <button type="button" 
+                  class="btn btn-outline-primary" 
+                  [class.active]="selectedView === 'list'"
+                  (click)="switchView('list')">
+            <i class="fas fa-list me-1"></i>List View
+          </button>
+          <button type="button" 
+                  class="btn btn-outline-primary" 
+                  [class.active]="selectedView === 'create'"
+                  (click)="switchView('create')">
+            <i class="fas fa-plus me-1"></i>Create Report
+          </button>
+        </div>
+        
+        <!-- Export Dropdown -->
+        <div class="btn-group" dropdown>
+          <button type="button" 
+                  class="btn btn-success dropdown-toggle" 
+                  dropdownToggle
+                  [disabled]="isExporting">
+            <i class="fas fa-download me-1"></i>
+            <span *ngIf="!isExporting">Export</span>
+            <span *ngIf="isExporting">Exporting...</span>
+          </button>
+          <ul class="dropdown-menu" *dropdownMenu>
+            <li><h6 class="dropdown-header">Export Format</h6></li>
+            <li>
+              <a class="dropdown-item" (click)="exportFormat = ExportFormat.PDF; exportSelectedReports()">
+                <i class="fas fa-file-pdf text-danger me-2"></i>PDF
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="exportFormat = ExportFormat.CSV; exportSelectedReports()">
+                <i class="fas fa-file-csv text-success me-2"></i>CSV
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="exportFormat = ExportFormat.JSON; exportSelectedReports()">
+                <i class="fas fa-file-code text-info me-2"></i>JSON
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="exportFormat = ExportFormat.PowerPoint; exportSelectedReports()">
+                <i class="fas fa-file-powerpoint text-warning me-2"></i>PowerPoint
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification -->
+  <div *ngIf="notification" 
+       class="alert alert-dismissible fade show"
+       [ngClass]="{
+         'alert-success': notification.type === 'success',
+         'alert-danger': notification.type === 'error',
+         'alert-info': notification.type === 'info',
+         'alert-warning': notification.type === 'warning'
+       }">
+    <i class="fas" 
+       [ngClass]="{
+         'fa-check-circle': notification.type === 'success',
+         'fa-exclamation-triangle': notification.type === 'error' || notification.type === 'warning',
+         'fa-info-circle': notification.type === 'info'
+       }"></i>
+    {{ notification.message }}
+    <button type="button" class="btn-close" (click)="clearNotification()"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" aria-hidden="false" aria-label="Loading reports">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading reports...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !isLoading" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadInitialData()">
+      <i class="fas fa-redo me-1"></i>Retry
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && !error">
+    
+    <!-- Reports List View -->
+    <div *ngIf="selectedView === 'list'">
+      <!-- Filters and Search -->
+      <div class="filters-section card mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Search -->
+            <div class="col-md-3">
+              <label for="searchReports" class="form-label">Search Reports</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input type="text" 
+                       id="searchReports"
+                       class="form-control" 
+                       placeholder="Search by title, type, creator..."
+                       [(ngModel)]="searchTerm"
+                       (ngModelChange)="onFiltersChange()">
+              </div>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="col-md-2">
+              <label for="statusFilter" class="form-label">Status</label>
+              <select id="statusFilter" class="form-select" [(ngModel)]="statusFilter" (ngModelChange)="onFiltersChange()">
+                <option value="all">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+            </div>
+            
+            <!-- Type Filter -->
+            <div class="col-md-2">
+              <label for="typeFilter" class="form-label">Type</label>
+              <select id="typeFilter" class="form-select" [(ngModel)]="typeFilter" (ngModelChange)="onFiltersChange()">
+                <option value="all">All Types</option>
+                <option *ngFor="let type of reportTypes" [value]="type">{{type}}</option>
+              </select>
+            </div>
+            
+            <!-- Department Filter (Admin and Executive only) -->
+            <div class="col-md-2" *ngIf="isAdmin || isExecutive">
+              <label for="departmentFilter" class="form-label">Department</label>
+              <select id="departmentFilter" class="form-select" [(ngModel)]="departmentFilter" (ngModelChange)="onFiltersChange()">
+                <option value="all">All Departments</option>
+                <option *ngFor="let dept of departments" [value]="dept.id">{{dept.name}}</option>
+              </select>
+            </div>
+            
+            <!-- Date Range -->
+            <div class="col-md-2">
+              <label for="dateRangeFilter" class="form-label">Date Range</label>
+              <select id="dateRangeFilter" class="form-select" [(ngModel)]="dateRangeFilter" (ngModelChange)="onFiltersChange()">
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+                <option value="1y">Last year</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
+            
+            <!-- Actions -->
+            <div class="col-md-1">
+              <label for="refreshBtn" class="form-label">&nbsp;</label>
+              <div class="d-grid">
+                <button id="refreshBtn" class="btn btn-outline-secondary" (click)="loadReportsData()">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports Table -->
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h5 class="card-title mb-0">
+                Reports List 
+                <span class="badge bg-secondary ms-2">{{filteredReports.length}} shown</span>
+              </h5>
+            </div>
+            <div class="col-auto">
+              <div class="text-muted small">
+                Page {{currentPage}} of {{totalPages}}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">
+                    <input type="checkbox" class="form-check-input">
+                  </th>
+                  <th scope="col">Title</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" *ngIf="isAdmin">Department</th>
+                  <th scope="col">Created By</th>
+                  <th scope="col">Created Date</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let report of filteredReports" 
+                    [class.table-warning]="report.status === 'Overdue'"
+                    [class.table-success]="report.status === 'Approved'">
+                  <td>
+                    <input type="checkbox" class="form-check-input">
+                  </td>
+                  <td>
+                    <div class="d-flex flex-column">
+                      <strong class="text-truncate" style="max-width: 200px;" 
+                              [title]="report.title">
+                        {{report.title}}
+                      </strong>
+                      <small class="text-muted" *ngIf="report.description">
+                        {{report.description | slice:0:50}}...
+                      </small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark">{{report.reportType}}</span>
+                  </td>
+                  <td>
+                    <span [class]="getStatusBadgeClass(report.status)">
+                      {{report.status}}
+                    </span>
+                  </td>
+                  <td *ngIf="isAdmin">
+                    <small class="text-muted">{{report.departmentName}}</small>
+                  </td>
+                  <td>
+                    <small>{{report.createdBy}}</small>
+                  </td>
+                  <td>
+                    <small>{{formatDate(report.createdAt)}}</small>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm" aria-label="Report actions">
+                      <button type="button" 
+                              class="btn btn-outline-primary" 
+                              (click)="switchView('details', report)"
+                              title="View Details">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      
+                      <button type="button" 
+                              class="btn btn-outline-warning" 
+                              (click)="switchView('edit', report)"
+                              *ngIf="canEditReport(report)"
+                              title="Edit Report">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      
+                      <button type="button" 
+                              class="btn btn-outline-success" 
+                              (click)="submitReport(report)"
+                              *ngIf="report.status === 'Draft' && report.createdByUserId === currentUser?.id"
+                              title="Submit for Approval">
+                        <i class="fas fa-paper-plane"></i>
+                      </button>
+                      
+                      <button type="button" 
+                              class="btn btn-outline-info" 
+                              (click)="approveReport(report)"
+                              *ngIf="canApproveReport(report)"
+                              title="Approve Report">
+                        <i class="fas fa-check"></i>
+                      </button>
+                      
+                      <div class="btn-group btn-group-sm" dropdown>
+                        <button type="button" 
+                                class="btn btn-outline-secondary dropdown-toggle" 
+                                dropdownToggle
+                                title="More Actions">
+                          <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <ul class="dropdown-menu" *dropdownMenu>
+                          <li>
+                            <a class="dropdown-item" (click)="exportReport(report)">
+                              <i class="fas fa-download me-2"></i>Export
+                            </a>
+                          </li>
+                          <li *ngIf="canDeleteReport(report)">
+                            <hr class="dropdown-divider">
+                          </li>
+                          <li *ngIf="canDeleteReport(report)">
+                            <a class="dropdown-item text-danger" (click)="deleteReport(report)">
+                              <i class="fas fa-trash me-2"></i>Delete
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                
+                <tr *ngIf="filteredReports.length === 0">
+                  <td colspan="8" class="text-center py-4 text-muted">
+                    <i class="fas fa-inbox fa-2x mb-3"></i>
+                    <p class="mb-0">No reports found matching your criteria</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="card-footer d-flex justify-content-between align-items-center" *ngIf="totalPages > 1">
+          <div class="text-muted small">
+            Showing {{((currentPage - 1) * pageSize) + 1}} to {{Math.min(currentPage * pageSize, totalReports)}} of {{totalReports}} reports
+          </div>
+          <nav aria-label="Reports pagination">
+            <ul class="pagination pagination-sm mb-0">
+              <!-- Previous Button -->
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" (click)="currentPage > 1 && onPageChange(currentPage - 1)" style="cursor: pointer;" aria-label="Previous">
+                  <i class="fas fa-chevron-left"></i>
+                </a>
+              </li>
+              
+              <!-- First Page -->
+              <li class="page-item" [class.active]="currentPage === 1" *ngIf="totalPages > 1">
+                <a class="page-link" (click)="onPageChange(1)" style="cursor: pointer;">1</a>
+              </li>
+              
+              <!-- Ellipsis Before -->
+              <li class="page-item disabled" *ngIf="currentPage > 4 && totalPages > 7">
+                <span class="page-link">...</span>
+              </li>
+              
+              <!-- Pages Around Current -->
+              <li class="page-item" 
+                  *ngFor="let page of getPageNumbers()"
+                  [class.active]="currentPage === page">
+                <a class="page-link" (click)="onPageChange(page)" style="cursor: pointer;">
+                  {{page}}
+                </a>
+              </li>
+              
+              <!-- Ellipsis After -->
+              <li class="page-item disabled" *ngIf="currentPage < totalPages - 3 && totalPages > 7">
+                <span class="page-link">...</span>
+              </li>
+              
+              <!-- Last Page -->
+              <li class="page-item" [class.active]="currentPage === totalPages" *ngIf="totalPages > 1 && totalPages > 1">
+                <a class="page-link" (click)="onPageChange(totalPages)" style="cursor: pointer;">{{totalPages}}</a>
+              </li>
+              
+              <!-- Next Button -->
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" (click)="currentPage < totalPages && onPageChange(currentPage + 1)" style="cursor: pointer;" aria-label="Next">
+                  <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Details View -->
+    <div *ngIf="selectedView === 'details' && selectedReport" class="report-details">
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header">
+              <div class="row align-items-center">
+                <div class="col">
+                  <h5 class="card-title mb-0">Report Details</h5>
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-outline-secondary btn-sm" (click)="switchView('list')">
+                    <i class="fas fa-arrow-left me-1"></i>Back to List
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Title:</strong></div>
+                <div class="col-sm-9">{{selectedReport.title}}</div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Description:</strong></div>
+                <div class="col-sm-9">{{selectedReport.description || 'No description provided'}}</div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Type:</strong></div>
+                <div class="col-sm-9">
+                  <span class="badge bg-light text-dark">{{selectedReport.reportType}}</span>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Status:</strong></div>
+                <div class="col-sm-9">
+                  <span [class]="getStatusBadgeClass(selectedReport.status)">{{selectedReport.status}}</span>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Department:</strong></div>
+                <div class="col-sm-9">{{selectedReport.departmentName}}</div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Report Period:</strong></div>
+                <div class="col-sm-9">
+                  {{formatDate(selectedReport.reportPeriodStart)}} - {{formatDate(selectedReport.reportPeriodEnd)}}
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Created By:</strong></div>
+                <div class="col-sm-9">{{selectedReport.createdBy}}</div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-sm-3"><strong>Created Date:</strong></div>
+                <div class="col-sm-9">{{formatDateTime(selectedReport.createdAt)}}</div>
+              </div>
+              <div class="row mb-3" *ngIf="selectedReport.submittedAt">
+                <div class="col-sm-3"><strong>Submitted Date:</strong></div>
+                <div class="col-sm-9">{{formatDateTime(selectedReport.submittedAt)}}</div>
+              </div>
+              <div class="row mb-3" *ngIf="selectedReport.approvedAt">
+                <div class="col-sm-3"><strong>Approved Date:</strong></div>
+                <div class="col-sm-9">{{formatDateTime(selectedReport.approvedAt)}}</div>
+              </div>
+              <div class="row mb-3" *ngIf="selectedReport.approvedBy">
+                <div class="col-sm-3"><strong>Approved By:</strong></div>
+                <div class="col-sm-9">{{selectedReport.approvedBy}}</div>
+              </div>
+              <div class="row mb-3" *ngIf="selectedReport.comments">
+                <div class="col-sm-3"><strong>Comments:</strong></div>
+                <div class="col-sm-9">{{selectedReport.comments}}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report Data -->
+          <div class="card mt-4" *ngIf="selectedReport.reportData && selectedReport.reportData.length > 0">
+            <div class="card-header">
+              <h6 class="card-title mb-0">Report Data</h6>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Type</th>
+                      <th>Value</th>
+                      <th>Last Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let field of selectedReport.reportData">
+                      <td>{{field.fieldName}}</td>
+                      <td>
+                        <span class="badge bg-secondary">{{field.fieldType}}</span>
+                      </td>
+                      <td>{{field.fieldValue}}</td>
+                      <td>
+                        <small class="text-muted">
+                          {{field.updatedAt ? formatDateTime(field.updatedAt) : formatDateTime(field.createdAt)}}
+                        </small>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Sidebar -->
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h6 class="card-title mb-0">Actions</h6>
+            </div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary" 
+                        (click)="switchView('edit', selectedReport)"
+                        *ngIf="canEditReport(selectedReport)">
+                  <i class="fas fa-edit me-2"></i>Edit Report
+                </button>
+                
+                <button class="btn btn-success" 
+                        (click)="submitReport(selectedReport)"
+                        *ngIf="selectedReport.status === 'Draft' && selectedReport.createdByUserId === currentUser?.id">
+                  <i class="fas fa-paper-plane me-2"></i>Submit for Approval
+                </button>
+                
+                <button class="btn btn-info" 
+                        (click)="approveReport(selectedReport)"
+                        *ngIf="canApproveReport(selectedReport)">
+                  <i class="fas fa-check me-2"></i>Approve Report
+                </button>
+                
+                <div class="btn-group" dropdown>
+                  <button type="button" 
+                          class="btn btn-outline-secondary dropdown-toggle" 
+                          dropdownToggle>
+                    <i class="fas fa-download me-2"></i>Export Report
+                  </button>
+                  <ul class="dropdown-menu w-100" *dropdownMenu>
+                    <li>
+                      <a class="dropdown-item" (click)="exportFormat = ExportFormat.PDF; exportReport(selectedReport)">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>PDF
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" (click)="exportFormat = ExportFormat.CSV; exportReport(selectedReport)">
+                        <i class="fas fa-file-csv text-success me-2"></i>CSV
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" (click)="exportFormat = ExportFormat.JSON; exportReport(selectedReport)">
+                        <i class="fas fa-file-code text-info me-2"></i>JSON
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                
+                <button class="btn btn-danger" 
+                        (click)="deleteReport(selectedReport)"
+                        *ngIf="canDeleteReport(selectedReport)">
+                  <i class="fas fa-trash me-2"></i>Delete Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Report View -->
+    <div *ngIf="selectedView === 'create' || selectedView === 'edit'" class="report-form">
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h5 class="card-title mb-0">
+                {{selectedView === 'create' ? 'Create New Report' : 'Edit Report'}}
+              </h5>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-outline-secondary btn-sm" (click)="switchView('list')">
+                <i class="fas fa-times me-1"></i>Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <form #reportFormRef="ngForm" (ngSubmit)="selectedView === 'create' ? createReport() : updateReport()">
+            <div class="row">
+              <div class="col-md-8">
+                <!-- Title -->
+                <div class="mb-3">
+                  <label for="title" class="form-label">Report Title *</label>
+                  <input type="text" 
+                         class="form-control" 
+                         id="title" 
+                         [(ngModel)]="reportForm.title" 
+                         name="title"
+                         [class.is-invalid]="formErrors['title']"
+                         required>
+                  <div class="invalid-feedback">{{formErrors['title']}}</div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea class="form-control" 
+                            id="description" 
+                            rows="3" 
+                            [(ngModel)]="reportForm.description" 
+                            name="description"
+                            placeholder="Enter report description..."></textarea>
+                </div>
+
+                <!-- Report Type -->
+                <div class="mb-3">
+                  <label for="reportType" class="form-label">Report Type *</label>
+                  <select class="form-select" 
+                          id="reportType" 
+                          [(ngModel)]="reportForm.reportType" 
+                          name="reportType"
+                          [class.is-invalid]="formErrors['reportType']"
+                          required>
+                    <option value="">Select report type...</option>
+                    <option *ngFor="let type of reportTypes" [value]="type">{{type}}</option>
+                  </select>
+                  <div class="invalid-feedback">{{formErrors['reportType']}}</div>
+                </div>
+
+                <!-- Department -->
+                <div class="mb-3">
+                  <label for="departmentId" class="form-label">Department *</label>
+                  <select class="form-select" 
+                          id="departmentId" 
+                          [(ngModel)]="reportForm.departmentId" 
+                          name="departmentId"
+                          [class.is-invalid]="formErrors['departmentId']"
+                          [disabled]="!isAdmin && !isExecutive"
+                          required>
+                    <option value="0">Select department...</option>
+                    <option *ngFor="let dept of departments" [value]="dept.id">{{dept.name}}</option>
+                  </select>
+                  <div class="invalid-feedback">{{formErrors['departmentId']}}</div>
+                  <div class="form-text" *ngIf="!isAdmin && !isExecutive">
+                    <i class="fas fa-info-circle me-1"></i>
+                    You can only create reports for your department: {{userDepartment}}
+                  </div>
+                </div>
+
+                <!-- Report Period -->
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="periodStart" class="form-label">Period Start *</label>
+                      <input type="date" 
+                             class="form-control" 
+                             id="periodStart" 
+                             [(ngModel)]="reportForm.reportPeriodStart" 
+                             name="periodStart"
+                             [class.is-invalid]="formErrors['period']"
+                             required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="periodEnd" class="form-label">Period End *</label>
+                      <input type="date" 
+                             class="form-control" 
+                             id="periodEnd" 
+                             [(ngModel)]="reportForm.reportPeriodEnd" 
+                             name="periodEnd"
+                             [class.is-invalid]="formErrors['period']"
+                             required>
+                      <div class="invalid-feedback">{{formErrors['period']}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <!-- Quick Actions -->
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <h6 class="card-title">Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                      <button type="button" class="btn btn-outline-primary btn-sm" (click)="resetForm()">
+                        <i class="fas fa-undo me-1"></i>Reset Form
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-save me-1"></i>Save as Draft
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Report Data Fields -->
+            <div class="mt-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Report Data Fields</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#addFieldCollapse">
+                  <i class="fas fa-plus me-1"></i>Add Field
+                </button>
+              </div>
+
+              <!-- Add New Field -->
+              <div class="collapse" id="addFieldCollapse">
+                <div class="card card-body mb-3">
+                  <div class="row g-3">
+                    <div class="col-md-3">
+                      <input type="text" 
+                             class="form-control" 
+                             placeholder="Field Name" 
+                             [(ngModel)]="newDataField.fieldName"
+                             name="newFieldName">
+                    </div>
+                    <div class="col-md-2">
+                      <select class="form-select" [(ngModel)]="newDataField.fieldType" name="newFieldType">
+                        <option value="Text">Text</option>
+                        <option value="Number">Number</option>
+                        <option value="Currency">Currency</option>
+                        <option value="Date">Date</option>
+                        <option value="Boolean">Boolean</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <input type="text" 
+                             class="form-control" 
+                             placeholder="Field Value" 
+                             [(ngModel)]="newDataField.fieldValue"
+                             name="newFieldValue">
+                    </div>
+                    <div class="col-md-3">
+                      <button type="button" class="btn btn-success btn-sm me-2" (click)="addDataField()">
+                        <i class="fas fa-plus"></i>Add
+                      </button>
+                      <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#addFieldCollapse">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Existing Fields -->
+              <div class="table-responsive" *ngIf="reportForm.reportData.length > 0">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Type</th>
+                      <th>Value</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let field of reportForm.reportData; let i = index">
+                      <td>{{field.fieldName}}</td>
+                      <td>
+                        <span class="badge bg-secondary">{{field.fieldType}}</span>
+                      </td>
+                      <td>{{field.fieldValue}}</td>
+                      <td>
+                        <button type="button" 
+                                class="btn btn-outline-danger btn-sm" 
+                                (click)="removeDataField(i)">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div *ngIf="reportForm.reportData.length === 0" class="text-center text-muted py-3">
+                <i class="fas fa-database fa-2x mb-2"></i>
+                <p class="mb-0">No data fields added yet</p>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="border-top pt-3 mt-4">
+              <div class="row">
+                <div class="col">
+                  <button type="button" class="btn btn-outline-secondary" (click)="switchView('list')">
+                    <i class="fas fa-times me-1"></i>Cancel
+                  </button>
+                </div>
+                <div class="col-auto">
+                  <button type="submit" 
+                          class="btn btn-primary" 
+                          [disabled]="isLoading || !reportFormRef.form.valid">
+                    <i class="fas fa-save me-1"></i>
+                    {{selectedView === 'create' ? 'Create Report' : 'Update Report'}}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
