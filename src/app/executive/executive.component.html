@@ -26,41 +26,17 @@
             </button>
           </div>
           <div class="btn-group">
-            <button 
-              class="btn btn-success dropdown-toggle" 
-              type="button" 
-              data-bs-toggle="dropdown" 
-              [disabled]="isExporting"
-              aria-expanded="false">
-              <i class="fas fa-download" *ngIf="!isExporting"></i>
-              <i class="fas fa-spinner fa-spin" *ngIf="isExporting"></i>
-              <span *ngIf="!isExporting">Export</span>
-              <span *ngIf="isExporting">Exporting {{ exportingFormat }}...</span>
+            <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-download"></i> Export
             </button>
             <ul class="dropdown-menu">
-              <li><button 
-                class="dropdown-item" 
-                (click)="exportDashboard(ExportFormats.PDF)"
-                [disabled]="isExporting">
+              <li><button class="dropdown-item" (click)="exportDashboard(ExportFormats.PDF)">
                 <i class="fas fa-file-pdf text-danger"></i> Export as PDF
               </button></li>
-              <li><button 
-                class="dropdown-item" 
-                (click)="exportDashboard(ExportFormats.CSV)"
-                [disabled]="isExporting">
-                <i class="fas fa-file-csv text-info"></i> Export as CSV
+              <li><button class="dropdown-item" (click)="exportDashboard(ExportFormats.Excel)">
+                <i class="fas fa-file-excel text-success"></i> Export as Excel
               </button></li>
-              <li><button 
-                class="dropdown-item" 
-                (click)="exportDashboard(ExportFormats.JSON)"
-                [disabled]="isExporting">
-                <i class="fas fa-code text-secondary"></i> Export as JSON
-              </button></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><button 
-                class="dropdown-item" 
-                (click)="exportDashboard(ExportFormats.PowerPoint)"
-                [disabled]="isExporting">
+              <li><button class="dropdown-item" (click)="exportDashboard(ExportFormats.PowerPoint)">
                 <i class="fas fa-file-powerpoint text-warning"></i> Export as PowerPoint
               </button></li>
             </ul>
@@ -69,30 +45,6 @@
         <small class="text-muted d-block mt-2">
           Last updated: {{ lastRefresh | date:'short' }}
         </small>
-      </div>
-    </div>
-
-    <!-- Export Notification Area -->
-    <div class="row" *ngIf="exportNotification">
-      <div class="col-12">
-        <div class="alert alert-dismissible fade show mb-3" 
-             [ngClass]="{
-               'alert-success': exportNotification.type === 'success',
-               'alert-danger': exportNotification.type === 'error',
-               'alert-info': exportNotification.type === 'info'
-             }">
-          <i class="fas" 
-             [ngClass]="{
-               'fa-check-circle': exportNotification.type === 'success',
-               'fa-exclamation-triangle': exportNotification.type === 'error',
-               'fa-info-circle': exportNotification.type === 'info'
-             }"></i>
-          {{ exportNotification.message }}
-          <button type="button" 
-                  class="btn-close" 
-                  (click)="clearNotification()" 
-                  aria-label="Close"></button>
-        </div>
       </div>
     </div>
   </div>
