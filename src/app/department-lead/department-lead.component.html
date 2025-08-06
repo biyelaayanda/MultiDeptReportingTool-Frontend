@@ -1,3 +1,454 @@
-<p>
-  department-lead works!
-</p>
+<div class="department-lead-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <h1 class="dashboard-title">
+          <i class="fas fa-users text-primary"></i>
+          {{ userDepartment }} Department Dashboard
+        </h1>
+        <p class="text-muted">Department Lead View - Manage your team and reports</p>
+      </div>
+      <div class="col-md-6 text-end">
+        <div class="dashboard-actions">
+          <!-- Timeframe Selection -->
+          <div class="btn-group me-2">
+            <select class="form-select" [(ngModel)]="selectedTimeframe" (change)="onTimeframeChange()">
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+            </select>
+          </div>
+          
+          <!-- Refresh Button -->
+          <button class="btn btn-outline-primary me-2" (click)="refreshDashboard()" [disabled]="isLoading">
+            <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
+          </button>
+          
+          <!-- Export Dropdown -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" [disabled]="isExporting">
+              <i class="fas fa-download"></i>
+              <span *ngIf="!isExporting">Export</span>
+              <span *ngIf="isExporting">Exporting {{ exportingFormat }}...</span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" (click)="exportDashboard(ExportFormats.PDF)" [class.disabled]="isExporting">
+                <i class="fas fa-file-pdf text-danger"></i> Export as PDF</a></li>
+              <li><a class="dropdown-item" (click)="exportDashboard(ExportFormats.CSV)" [class.disabled]="isExporting">
+                <i class="fas fa-file-csv text-success"></i> Export as CSV</a></li>
+              <li><a class="dropdown-item" (click)="exportDashboard(ExportFormats.PowerPoint)" [class.disabled]="isExporting">
+                <i class="fas fa-file-powerpoint text-warning"></i> Export as PowerPoint</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Last Updated -->
+        <small class="text-muted d-block mt-2">
+          Last updated: Just now
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Notification -->
+  <div *ngIf="exportNotification" class="alert alert-dismissible fade show mt-3" 
+       [class.alert-success]="exportNotification.type === 'success'"
+       [class.alert-danger]="exportNotification.type === 'error'"
+       [class.alert-info]="exportNotification.type === 'info'">
+    {{ exportNotification.message }}
+    <button type="button" class="btn-close" (click)="clearNotification()"></button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading && !dashboardData" class="text-center py-5">
+    <div class="spinner-border text-primary" aria-label="Loading">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading department dashboard...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-primary ms-2" (click)="refreshDashboard()">
+      <i class="fas fa-retry"></i> Retry
+    </button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="dashboardData && !error">
+    
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs dashboard-tabs">
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="selectedView === 'overview'" (click)="onViewChange('overview')">
+          <i class="fas fa-chart-pie"></i> Overview
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="selectedView === 'reports'" (click)="onViewChange('reports')">
+          <i class="fas fa-file-alt"></i> Reports ({{ totalReports }})
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="selectedView === 'analytics'" (click)="onViewChange('analytics')">
+          <i class="fas fa-chart-line"></i> Analytics
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="selectedView === 'team'" (click)="onViewChange('team')">
+          <i class="fas fa-users"></i> Team Performance
+        </a>
+      </li>
+    </ul>
+
+    <!-- Overview Tab -->
+    <div *ngIf="selectedView === 'overview'" class="tab-content">
+      <!-- Key Metrics Row -->
+      <div class="row mt-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <i class="fas fa-file-alt text-primary"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">{{ dashboardData.totalReports }}</div>
+              <div class="kpi-label">Total Reports</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <i class="fas fa-check-circle text-success"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">{{ dashboardData.completionRate | number:'1.1-1' }}%</div>
+              <div class="kpi-label">Completion Rate</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <i class="fas fa-clock text-warning"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">{{ dashboardData.averageResponseTime | number:'1.1-1' }}</div>
+              <div class="kpi-label">Avg Response (days)</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+          <div class="kpi-card">
+            <div class="kpi-icon">
+              <i class="fas fa-gauge-high text-info"></i>
+            </div>
+            <div class="kpi-content">
+              <div class="kpi-value">{{ dashboardData.efficiency | number:'1.1-1' }}%</div>
+              <div class="kpi-label">Efficiency Score</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="row mt-4">
+        <!-- Reports Status Chart -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-chart-pie text-primary"></i>
+                Reports Status
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-container" style="height: 300px;">
+                <app-chart *ngIf="reportsStatusChart" [chartConfig]="reportsStatusChart"></app-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Performance Trends Chart -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-chart-line text-success"></i>
+                Performance Trends
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-container" style="height: 300px;">
+                <app-chart *ngIf="trendsChart" [chartConfig]="trendsChart"></app-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions & Alerts Row -->
+      <div class="row mt-4">
+        <!-- Recent Activity -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-history text-info"></i>
+                Recent Activity
+              </h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="dashboardData.recentActivity.length === 0" class="text-muted text-center py-3">
+                No recent activity
+              </div>
+              <div *ngFor="let activity of dashboardData.recentActivity" class="activity-item">
+                <div class="activity-content">
+                  <i class="fas fa-circle activity-indicator" 
+                     [class.text-success]="activity.type === 'report_completed'"
+                     [class.text-warning]="activity.type === 'deadline_approaching'"
+                     [class.text-info]="activity.type === 'report_assigned'"></i>
+                  <span class="activity-message">{{ activity.message }}</span>
+                  <small class="activity-time text-muted">{{ activity.time }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Deadlines -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-calendar-alt text-warning"></i>
+                Upcoming Deadlines
+              </h5>
+            </div>
+            <div class="card-body">
+              <div *ngIf="dashboardData.upcomingDeadlines.length === 0" class="text-muted text-center py-3">
+                No upcoming deadlines
+              </div>
+              <div *ngFor="let deadline of dashboardData.upcomingDeadlines" class="deadline-item">
+                <div class="deadline-content">
+                  <div class="deadline-title">{{ deadline.reportTitle }}</div>
+                  <div class="deadline-info">
+                    <span class="deadline-date">{{ deadline.dueDate | date:'short' }}</span>
+                    <span class="deadline-assignee">{{ deadline.assignee }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div *ngIf="selectedView === 'reports'" class="tab-content">
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <h5 class="card-title mb-0">
+                    <i class="fas fa-file-alt text-primary"></i>
+                    Department Reports
+                  </h5>
+                </div>
+                <div class="col-md-6">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <select class="form-select form-select-sm" [(ngModel)]="reportStatusFilter" (change)="onReportStatusFilterChange()">
+                        <option value="all">All Status</option>
+                        <option value="Completed">Completed</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Overdue">Overdue</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <button class="btn btn-sm btn-primary w-100">
+                        <i class="fas fa-plus"></i> New Report
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Reports Table -->
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Status</th>
+                      <th>Priority</th>
+                      <th>Assigned To</th>
+                      <th>Due Date</th>
+                      <th>Progress</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let report of reportsData">
+                      <td>
+                        <div class="report-title">{{ report.title }}</div>
+                        <small class="text-muted">ID: {{ report.id }}</small>
+                      </td>
+                      <td>
+                        <span [class]="getStatusBadgeClass(report.status)">
+                          {{ report.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <span [class]="getPriorityBadgeClass(report.priority)">
+                          {{ report.priority }}
+                        </span>
+                      </td>
+                      <td>{{ report.assignedTo }}</td>
+                      <td>
+                        <span [class.text-danger]="isOverdue(report.dueDate) && report.status !== 'Completed'">
+                          {{ report.dueDate | date:'short' }}
+                        </span>
+                      </td>
+                      <td>
+                        <div class="progress" style="height: 6px;">
+                          <div class="progress-bar" 
+                               [style.width.%]="report.completionPercentage"
+                               [class.bg-success]="report.completionPercentage === 100"
+                               [class.bg-warning]="report.completionPercentage < 100 && report.completionPercentage >= 50"
+                               [class.bg-danger]="report.completionPercentage < 50">
+                          </div>
+                        </div>
+                        <small>{{ report.completionPercentage }}%</small>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <button class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <button class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination would go here if needed -->
+              <div *ngIf="reportsData.length === 0" class="text-center py-4">
+                <i class="fas fa-file-alt fa-3x text-muted"></i>
+                <p class="text-muted mt-2">No reports found</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div *ngIf="selectedView === 'analytics'" class="tab-content">
+      <div class="row mt-4">
+        <!-- Performance Metrics -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-chart-bar text-primary"></i>
+                Performance vs Targets
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="chart-container" style="height: 350px;">
+                <app-chart *ngIf="performanceChart" [chartConfig]="performanceChart"></app-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Trends -->
+        <div class="col-lg-6 mb-4">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-trending-up text-success"></i>
+                Key Trend Indicators
+              </h5>
+            </div>
+            <div class="card-body">
+              <div *ngFor="let trend of dashboardData.trends" class="trend-item">
+                <div class="row align-items-center">
+                  <div class="col-8">
+                    <div class="trend-metric">{{ trend.metric }}</div>
+                    <div class="trend-value">{{ trend.value | number:'1.1-1' }}{{ trend.unit || '' }}</div>
+                  </div>
+                  <div class="col-4 text-end">
+                    <div class="trend-change">
+                      <i [class]="getChangeIcon(trend.direction)"></i>
+                      {{ Math.abs(trend.change) | number:'1.1-1' }}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team Performance Tab -->
+    <div *ngIf="selectedView === 'team'" class="tab-content">
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-users text-info"></i>
+                Team Performance Overview
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div *ngFor="let performer of dashboardData.topPerformers" class="col-lg-4 col-md-6 mb-3">
+                  <div class="performer-card">
+                    <div class="performer-info">
+                      <div class="performer-name">{{ performer.name }}</div>
+                      <div class="performer-stats">
+                        <div class="stat">
+                          <span class="stat-label">Reports Completed:</span>
+                          <span class="stat-value">{{ performer.completedReports }}</span>
+                        </div>
+                        <div class="stat">
+                          <span class="stat-label">Efficiency:</span>
+                          <span class="stat-value">{{ performer.efficiency | number:'1.1-1' }}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div *ngIf="dashboardData.topPerformers.length === 0" class="text-center py-4">
+                <i class="fas fa-users fa-3x text-muted"></i>
+                <p class="text-muted mt-2">No team performance data available</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

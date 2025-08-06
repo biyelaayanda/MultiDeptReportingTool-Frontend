@@ -1,0 +1,452 @@
+/* Department Lead Dashboard Styles */
+.department-lead-dashboard {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Header Styles */
+.dashboard-header {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: #fff;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(23, 162, 184, 0.3);
+}
+
+.dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+
+.dashboard-actions .btn {
+  border-radius: 25px;
+  padding: 8px 20px;
+  font-weight: 500;
+}
+
+/* KPI Cards */
+.kpi-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+}
+
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.kpi-icon {
+  font-size: 2.5rem;
+  margin-right: 20px;
+  opacity: 0.8;
+}
+
+.kpi-content {
+  flex: 1;
+}
+
+.kpi-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #2c3e50;
+}
+
+.kpi-label {
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Navigation Tabs */
+.dashboard-tabs {
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 0;
+}
+
+.dashboard-tabs .nav-link {
+  border: none;
+  color: #6c757d;
+  font-weight: 500;
+  padding: 15px 20px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-tabs .nav-link:hover {
+  border-color: transparent;
+  color: #17a2b8;
+}
+
+.dashboard-tabs .nav-link.active {
+  background-color: transparent;
+  border-color: transparent;
+  color: #17a2b8;
+  border-bottom: 3px solid #17a2b8;
+}
+
+/* Tab Content */
+.tab-content {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+/* Chart Containers */
+.chart-container {
+  position: relative;
+  padding: 20px;
+}
+
+.chart-container canvas {
+  max-height: 100% !important;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+  border-radius: 12px 12px 0 0;
+  padding: 20px;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Activity Feed */
+.activity-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activity-indicator {
+  font-size: 0.6rem;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.activity-message {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* Deadline Items */
+.deadline-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.deadline-item:last-child {
+  border-bottom: none;
+}
+
+.deadline-title {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.deadline-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.deadline-date {
+  font-weight: 500;
+}
+
+.deadline-assignee {
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+/* Reports Table */
+.table th {
+  border-top: none;
+  font-weight: 600;
+  color: #2c3e50;
+  background-color: #f8f9fa;
+}
+
+.table td {
+  vertical-align: middle;
+  border-color: #f1f3f4;
+}
+
+.report-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Badge Styles */
+.badge {
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  font-weight: 500;
+}
+
+/* Progress Bars */
+.progress {
+  background-color: #e9ecef;
+  border-radius: 4px;
+}
+
+.progress-bar {
+  transition: width 0.6s ease;
+}
+
+/* Trend Items */
+.trend-item {
+  padding: 15px 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.trend-item:last-child {
+  border-bottom: none;
+}
+
+.trend-metric {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.trend-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #17a2b8;
+}
+
+.trend-change {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Team Performance Cards */
+.performer-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  height: 100%;
+}
+
+.performer-card:hover {
+  transform: translateY(-3px);
+}
+
+.performer-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.performer-stats .stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #17a2b8;
+}
+
+/* Loading and Empty States */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Alerts */
+.alert {
+  border: none;
+  border-radius: 12px;
+}
+
+.alert-dismissible .btn-close {
+  padding: 1rem 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .dashboard-title {
+    font-size: 2rem;
+  }
+  
+  .dashboard-actions {
+    margin-top: 20px;
+  }
+  
+  .kpi-card {
+    margin-bottom: 15px;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+  
+  .dashboard-tabs .nav-link {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .department-lead-dashboard {
+    padding: 10px;
+  }
+  
+  .dashboard-title,
+  .kpi-value {
+    font-size: 1.5rem;
+  }
+  
+  .card-header {
+    padding: 15px;
+  }
+  
+  .kpi-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+  }
+  
+  .activity-content {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .activity-time {
+    margin-left: 0;
+  }
+  
+  .deadline-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
+
+/* Custom scrollbars for activity feeds */
+.card-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Animation for loading states */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card,
+.kpi-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Focus styles for accessibility */
+.btn:focus,
+.form-select:focus,
+.nav-link:focus {
+  box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+/* Print styles */
+@media print {
+  .dashboard-header,
+  .dashboard-actions,
+  .btn,
+  .nav-tabs {
+    display: none !important;
+  }
+  
+  .card {
+    box-shadow: none;
+    border: 1px solid #dee2e6;
+  }
+  
+  .department-lead-dashboard {
+    padding: 0;
+  }
+}
