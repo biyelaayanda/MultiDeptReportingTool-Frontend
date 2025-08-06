@@ -17,19 +17,19 @@ const routes: Routes = [
     path: 'dashboard', 
     component: DashboardComponent, 
     canActivate: [AuthGuard],
-    data: { role: 'admin' }
+    data: { role: 'Admin' }
   },
   { 
     path: 'department-lead', 
     component: DepartmentLeadComponent, 
     canActivate: [AuthGuard],
-    data: { role: 'department-lead' }
+    data: { role: 'DepartmentLead' }
   },
   { 
     path: 'executive', 
     component: ExecutiveComponent, 
     canActivate: [AuthGuard],
-    data: { role: 'executive' }
+    data: { role: 'Executive' }
   },
   { 
     path: 'reporting', 
@@ -40,7 +40,7 @@ const routes: Routes = [
     path: 'staff-user', 
     component: StaffUserComponent, 
     canActivate: [AuthGuard],
-    data: { role: 'staff' }
+    data: { role: 'Staff' }
   },
   { path: '**', redirectTo: '/auth' }
 ];

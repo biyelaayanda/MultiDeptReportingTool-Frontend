@@ -17,7 +17,13 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   login(loginRequest: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, loginRequest)
+    // Create clean login request without role field for API
+    const apiRequest = {
+      username: loginRequest.username,
+      password: loginRequest.password
+    };
+    
+    return this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, apiRequest)
       .pipe(
         tap(response => {
           if (response && response.token) {
@@ -83,6 +89,22 @@ export class AuthService {
   hasRole(role: string): boolean {
     const userRole = this.getUserRole();
     return userRole === role;
+  }
+
+  getDefaultRouteForRole(): string {
+    const role = this.getUserRole();
+    switch (role) {
+      case 'Executive':
+        return '/executive';
+      case 'Admin':
+        return '/dashboard';
+      case 'DepartmentLead':
+        return '/department-lead';
+      case 'Staff':
+        return '/staff-user';
+      default:
+        return '/reporting';
+    }
   }
 
   getProfile(): Observable<User> {

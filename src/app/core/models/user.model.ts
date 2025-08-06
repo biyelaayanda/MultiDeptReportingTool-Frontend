@@ -9,7 +9,7 @@ export interface User {
 export interface LoginRequest {
   username: string;
   password: string;
-  role: string;
+  role?: string;
 }
 
 export interface LoginResponse {

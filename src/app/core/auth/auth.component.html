@@ -23,21 +23,6 @@
           [(ngModel)]="loginForm.password"
           required>
       </div>
-      
-      <div class="form-group">
-        <label for="role">Role:</label>
-        <select 
-          id="role" 
-          name="role" 
-          [(ngModel)]="loginForm.role"
-          required>
-          <option value="">Select your role</option>
-          <option value="admin">Admin</option>
-          <option value="department-lead">Department Lead</option>
-          <option value="executive">Executive</option>
-          <option value="staff">Staff User</option>
-        </select>
-      </div>
 
       <div class="form-group" *ngIf="error">
         <div class="error-message">{{ error }}</div>
@@ -61,10 +46,8 @@
 
     <div class="demo-credentials">
       <h4>Demo Credentials:</h4>
-      <p><strong>Admin:</strong> admin / admin123</p>
-      <p><strong>Dept Lead:</strong> deptlead / dept123</p>
-      <p><strong>Executive:</strong> executive / exec123</p>
-      <p><strong>Staff:</strong> staff / staff123</p>
+      <p><strong>Admin:</strong> admin / Admin123!</p>
+      <p><strong>Staff:</strong> john.staff / Staff123!</p>
     </div>
   </div>
 </div>

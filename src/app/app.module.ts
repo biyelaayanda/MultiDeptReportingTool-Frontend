@@ -11,9 +11,12 @@ import { ExecutiveComponent } from './executive/executive.component';
 import { ReportingComponent } from './reporting/reporting.component';
 import { StaffUserComponent } from './staff-user/staff-user.component';
 import { AuthComponent } from './core/auth/auth.component';
+import { ChartComponent } from './shared/components/chart.component';
 
 // Services and Interceptors
 import { AuthService } from './core/services/auth.service';
+import { AnalyticsService } from './core/services/analytics.service';
+import { ExportService } from './core/services/export.service';
 import { TokenInterceptor } from './core/services/token.interceptor';
 
 @NgModule({
@@ -24,7 +27,8 @@ import { TokenInterceptor } from './core/services/token.interceptor';
     ExecutiveComponent,
     ReportingComponent,
     StaffUserComponent,
-    AuthComponent
+    AuthComponent,
+    ChartComponent
   ],
   imports: [
     BrowserModule,
@@ -34,6 +38,8 @@ import { TokenInterceptor } from './core/services/token.interceptor';
   ],
   providers: [
     AuthService,
+    AnalyticsService,
+    ExportService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
