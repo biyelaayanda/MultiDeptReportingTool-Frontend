@@ -70,6 +70,7 @@ export class ReportingComponent implements OnInit, OnDestroy {
   departments: Department[] = [];
   reportTypes: string[] = [];
   filteredReports: Report[] = [];
+  paginatedReports: Report[] = []; // New: reports for current page only
   
   // User Context
   currentUser: any = null;
@@ -91,7 +92,7 @@ export class ReportingComponent implements OnInit, OnDestroy {
   departmentFilter = 'all';
   dateRangeFilter = '30d';
   
-  // Pagination
+  // Pagination - Simple client-side approach
   currentPage = 1;
   pageSize = 10;
   totalReports = 0;
@@ -214,16 +215,8 @@ export class ReportingComponent implements OnInit, OnDestroy {
         // Ensure reportTypes is always an array  
         this.reportTypes = Array.isArray(data.reportTypes) ? data.reportTypes : [];
         
-        // Handle the reports response correctly - backend returns {success, data, totalCount}
-        const reportsResponse = data.reports as any;
-        if (reportsResponse?.success && reportsResponse?.data) {
-          this.processReportsData(reportsResponse.data);
-          this.totalReports = reportsResponse.totalCount || 0;
-          this.totalPages = reportsResponse.totalPages || 1;
-        } else {
-          this.reports = [];
-          this.totalReports = 0;
-        }
+        // Process reports data
+        this.processReportsData(data.reports);
         
         this.isLoading = false;
       },
@@ -239,23 +232,10 @@ export class ReportingComponent implements OnInit, OnDestroy {
   }
 
   loadReports() {
-    const params: any = {
-      page: this.currentPage.toString(),
-      pageSize: this.pageSize.toString()
-    };
+    // Simplified: Load ALL reports without server-side pagination
+    const params: any = {};
 
-    // Add filters
-    if (this.statusFilter !== 'all') {
-      params.status = this.statusFilter;
-    }
-    if (this.typeFilter !== 'all') {
-      params.reportType = this.typeFilter;
-    }
-    if (this.searchTerm) {
-      params.search = this.searchTerm;
-    }
-    
-    // Apply role-based filtering at API level
+    // Apply role-based filtering at API level only
     if (this.isAdmin || this.isExecutive) {
       // Admins and Executives can see all reports or filter by specific department
       if (this.departmentFilter !== 'all') {
@@ -269,10 +249,6 @@ export class ReportingComponent implements OnInit, OnDestroy {
     } else {
       // Regular staff can only see their own reports
       params.createdByUserId = this.currentUser?.id?.toString();
-      // Also filter by their department for additional security
-      if (this.userDepartmentId) {
-        params.departmentId = this.userDepartmentId.toString();
-      }
       console.log('Staff - Loading own reports for user:', this.currentUser?.id);
     }
 
@@ -281,8 +257,19 @@ export class ReportingComponent implements OnInit, OnDestroy {
   }
 
   processReportsData(data: any) {
-    // Ensure data is an array
-    const reportsArray = Array.isArray(data) ? data : [];
+    // Handle different response formats
+    let reportsArray = [];
+    
+    if (data?.success && data?.data) {
+      // Backend returns {success, data, totalCount} format
+      reportsArray = Array.isArray(data.data) ? data.data : [];
+    } else if (Array.isArray(data)) {
+      // Direct array response
+      reportsArray = data;
+    } else {
+      console.warn('Unexpected data format:', data);
+      reportsArray = [];
+    }
     
     this.reports = reportsArray.map((report: any) => ({
       id: report.id,
@@ -305,8 +292,9 @@ export class ReportingComponent implements OnInit, OnDestroy {
       reportData: report.reportData || []
     }));
 
-    this.totalReports = data.totalCount || this.reports.length;
-    this.totalPages = Math.ceil(this.totalReports / this.pageSize);
+    console.log('Processed reports:', this.reports.length);
+    
+    // Apply filters and pagination
     this.applyFilters();
   }
 
@@ -373,8 +361,7 @@ export class ReportingComponent implements OnInit, OnDestroy {
   applyFilters() {
     let filtered = [...this.reports];
 
-    // NOTE: Role-based filtering is now done at the server level in loadReports()
-    // No need to apply role filtering here as it would conflict with pagination
+    console.log('Starting with reports:', filtered.length);
 
     // Search filter
     if (this.searchTerm) {
@@ -412,17 +399,42 @@ export class ReportingComponent implements OnInit, OnDestroy {
     }
 
     this.filteredReports = filtered;
+    console.log('After filtering:', this.filteredReports.length);
+
+    // Calculate pagination
+    this.totalReports = this.filteredReports.length;
+    this.totalPages = Math.ceil(this.totalReports / this.pageSize);
+    
+    // Ensure current page is valid
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = Math.max(1, this.totalPages);
+    }
+
+    // Apply pagination
+    this.applyPagination();
+    
+    console.log(`Page ${this.currentPage} of ${this.totalPages}, showing ${this.paginatedReports.length} reports`);
+  }
+
+  applyPagination() {
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    
+    this.paginatedReports = this.filteredReports.slice(startIndex, endIndex);
+    
+    console.log(`Pagination: showing items ${startIndex + 1} to ${Math.min(endIndex, this.totalReports)} of ${this.totalReports}`);
   }
 
   onFiltersChange() {
-    this.currentPage = 1;
+    this.currentPage = 1; // Reset to first page when filters change
     this.applyFilters();
   }
 
   onPageChange(page: number) {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.loadReportsData();
+      this.applyPagination(); // Only apply pagination, don't reload data
+      console.log('Page changed to:', page);
     }
   }
 
@@ -441,14 +453,18 @@ export class ReportingComponent implements OnInit, OnDestroy {
   }
 
   loadReportsData() {
+    this.isLoading = true;
     this.loadReports().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (data) => {
         this.processReportsData(data);
+        this.isLoading = false;
       },
       error: (err) => {
+        console.error('Failed to load reports:', err);
         this.showNotification('error', 'Failed to load reports');
+        this.isLoading = false;
       }
     });
   }

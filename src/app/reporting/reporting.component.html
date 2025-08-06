@@ -192,7 +192,7 @@
             <div class="col">
               <h5 class="card-title mb-0">
                 Reports List 
-                <span class="badge bg-secondary ms-2">{{filteredReports.length}} shown</span>
+                <span class="badge bg-secondary ms-2">{{paginatedReports.length}} shown</span>
               </h5>
             </div>
             <div class="col-auto">
@@ -221,7 +221,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let report of filteredReports" 
+                <tr *ngFor="let report of paginatedReports" 
                     [class.table-warning]="report.status === 'Overdue'"
                     [class.table-success]="report.status === 'Approved'">
                   <td>
@@ -315,7 +315,7 @@
                   </td>
                 </tr>
                 
-                <tr *ngIf="filteredReports.length === 0">
+                <tr *ngIf="paginatedReports.length === 0">
                   <td colspan="8" class="text-center py-4 text-muted">
                     <i class="fas fa-inbox fa-2x mb-3"></i>
                     <p class="mb-0">No reports found matching your criteria</p>
