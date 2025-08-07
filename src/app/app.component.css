@@ -465,3 +465,55 @@
     font-size: 1rem;
   }
 }
+
+/* ===== GLOBAL TEXT CONTRAST IMPROVEMENTS ===== */
+
+/* Ensure good contrast for Bootstrap's text-muted across all components */
+.text-muted {
+  color: #6c757d !important;
+  font-weight: 500;
+}
+
+/* Improve contrast for card components */
+.card .text-muted {
+  color: #495057 !important;
+}
+
+/* Ensure headings have good contrast */
+h1, h2, h3, h4, h5, h6 {
+  color: #212529;
+  font-weight: 600;
+}
+
+/* Row with align-items-center improvements */
+.row.align-items-center .text-muted {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+.row.align-items-center h1,
+.row.align-items-center h2,
+.row.align-items-center h3,
+.row.align-items-center h4,
+.row.align-items-center h5,
+.row.align-items-center h6 {
+  color: #212529;
+  font-weight: 700;
+}
+
+/* Improve small text readability */
+small, .small {
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Better badge contrast */
+.badge {
+  font-weight: 600;
+}
+
+/* Ensure form labels are visible */
+label, .form-label {
+  color: #212529;
+  font-weight: 600;
+}

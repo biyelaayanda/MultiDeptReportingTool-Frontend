@@ -724,8 +724,8 @@
 }
 
 .card-title {
-  font-weight: 600;
-  color: #495057;
+  font-weight: 700;
+  color: #212529;
 }
 
 .metric-box {
@@ -737,7 +737,8 @@
 
 .metric-box h4 {
   margin: 0;
-  font-weight: 700;
+  font-weight: 800;
+  color: #212529;
 }
 
 .chart-container {
@@ -768,8 +769,8 @@
 
 .alert-title {
   font-size: 0.9rem;
-  font-weight: 600;
-  color: #495057;
+  font-weight: 700;
+  color: #212529;
 }
 
 .alert-message {
@@ -812,8 +813,8 @@
 }
 
 .performer-name {
-  font-weight: 600;
-  color: #495057;
+  font-weight: 700;
+  color: #212529;
   margin: 0;
 }
 
@@ -829,8 +830,8 @@
 
 .health-item {
   padding: 10px 0;
-  font-weight: 500;
-  color: #495057;
+  font-weight: 600;
+  color: #212529;
 }
 
 .health-stats {
@@ -952,3 +953,131 @@
 .kpi-card:nth-child(4) { animation-delay: 0.4s; }
 .kpi-card:nth-child(5) { animation-delay: 0.5s; }
 .kpi-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* ===== TEXT CONTRAST IMPROVEMENTS ===== */
+
+/* Improve text-muted contrast */
+.text-muted,
+.text-muted small {
+  color: #6c757d !important;
+  font-weight: 500;
+}
+
+/* Better contrast for card text */
+.card .text-muted {
+  color: #495057 !important;
+}
+
+/* Improve KPI label visibility */
+.kpi-label.text-muted {
+  color: #495057 !important;
+  font-weight: 600;
+}
+
+/* Alert text improvements */
+.alert-message.text-muted {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+.alert-meta.text-muted {
+  color: #6c757d !important;
+  font-weight: 500;
+}
+
+/* Performer text improvements */
+.performer-item .text-muted {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+/* Health stats text improvements */
+.health-stats .text-muted {
+  color: #495057 !important;
+  font-weight: 600;
+}
+
+/* Business Intelligence text improvements */
+.insight-item .text-muted,
+.recommendation-item .text-muted,
+.prediction-item .text-muted {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+/* Loading state text */
+.text-center .text-muted {
+  color: #6c757d !important;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* Improve contrast for metric values */
+.metric-box small {
+  color: #495057 !important;
+  font-weight: 600;
+}
+
+/* System health improvements */
+.health-stats h6 {
+  font-weight: 800;
+}
+
+/* Badge improvements for better visibility */
+.badge {
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+/* Ensure good contrast on white backgrounds */
+.card-body {
+  color: #212529;
+}
+
+/* Special attention to small text */
+small,
+.small {
+  font-weight: 500;
+}
+
+/* Row align-items-center specific improvements */
+.row.align-items-center {
+  color: inherit;
+}
+
+.row.align-items-center .text-muted {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+.row.align-items-center h1,
+.row.align-items-center h2,
+.row.align-items-center h3,
+.row.align-items-center h4,
+.row.align-items-center h5,
+.row.align-items-center h6 {
+  color: #212529;
+  font-weight: 700;
+}
+
+/* Improve visibility of icons */
+.fa, .fas, .far, .fab {
+  opacity: 0.9;
+}
+
+.card-header .fa,
+.card-header .fas {
+  opacity: 1;
+}
+
+/* Improve alert items visibility */
+.alerts-list .alert-item {
+  color: #212529;
+}
+
+.alerts-list .alert-item:hover {
+  background-color: #f8f9fa;
+  color: #212529;
+}
