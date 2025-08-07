@@ -10,7 +10,7 @@ import { filter } from 'rxjs';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'MultiDeptReportingTool-front-end';
+  title = 'MultiDeptReportingTool';
   currentUser: User | null = null;
   isLoading = true;
 

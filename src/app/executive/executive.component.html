@@ -147,9 +147,17 @@
               </div>
             </div>
             
-            <!-- Completion Rate Chart -->
-            <div class="chart-container mt-3" *ngIf="completionRateChart">
-              <app-chart [chartConfig]="completionRateChart"></app-chart>
+            <!-- Enhanced Completion Rate Chart -->
+            <div class="mt-3">
+              <app-base-chart
+                [type]="'doughnut'"
+                [data]="completionRateData"
+                [options]="completionRateOptions"
+                [height]="'300px'"
+                [isLoading]="isLoadingCharts"
+                (chartClick)="onCompletionRateClick($event)"
+                (chartReady)="onChartReady('completion', $event)">
+              </app-base-chart>
             </div>
           </div>
         </div>
@@ -165,9 +173,22 @@
             </h5>
           </div>
           <div class="card-body">
-            <div class="chart-container" *ngIf="departmentPerformanceChart">
-              <app-chart [chartConfig]="departmentPerformanceChart"></app-chart>
-            </div>
+            <!-- Enhanced Department Performance Chart -->
+            <app-bar-chart
+              [datasets]="[{
+                label: 'Efficiency Score (%)',
+                data: departmentPerformanceData,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                borderColor: ['#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed']
+              }]"
+              [options]="departmentPerformanceOptions"
+              [height]="'350px'"
+              [enableDrillDown]="true"
+              [showActions]="true"
+              [isLoading]="isLoadingCharts"
+              (barClick)="onDepartmentPerformanceClick($event)"
+              (chartReady)="onChartReady('department', $event)">
+            </app-bar-chart>
           </div>
         </div>
       </div>
@@ -185,9 +206,23 @@
             </h5>
           </div>
           <div class="card-body">
-            <div class="chart-container" *ngIf="trendsChart">
-              <app-chart [chartConfig]="trendsChart"></app-chart>
-            </div>
+            <!-- Enhanced Trends Chart -->
+            <app-line-chart
+              [datasets]="[{
+                label: 'Performance Trends',
+                data: trendsData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true
+              }]"
+              [options]="trendsOptions"
+              [height]="'350px'"
+              [showAreaFill]="true"
+              [smooth]="true"
+              [showDataPoints]="true"
+              [isLoading]="isLoadingCharts"
+              (chartReady)="onChartReady('trends', $event)">
+            </app-line-chart>
           </div>
         </div>
       </div>

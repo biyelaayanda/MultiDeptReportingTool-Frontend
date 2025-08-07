@@ -13,6 +13,9 @@ import { StaffUserComponent } from './staff-user/staff-user.component';
 import { AuthComponent } from './core/auth/auth.component';
 import { ChartComponent } from './shared/components/chart.component';
 
+// Import the new Charts Module
+import { ChartsModule } from './shared/components/charts/charts.module';
+
 // Services and Interceptors
 import { AuthService } from './core/services/auth.service';
 import { AnalyticsService } from './core/services/analytics.service';
@@ -34,7 +37,8 @@ import { TokenInterceptor } from './core/services/token.interceptor';
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    ChartsModule
   ],
   providers: [
     AuthService,

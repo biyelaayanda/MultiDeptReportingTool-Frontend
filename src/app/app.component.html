@@ -1,29 +1,75 @@
 <nav class="navbar" *ngIf="isAuthenticated()">
   <div class="nav-container">
-    <h1 class="nav-title">{{ title }}</h1>
-    <ul class="nav-menu">
-      <li class="nav-item" *ngIf="currentUser?.role === 'admin'">
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
-      </li>
-      <li class="nav-item" *ngIf="currentUser?.role === 'department-lead'">
-        <a routerLink="/department-lead" routerLinkActive="active" class="nav-link">Department Lead</a>
-      </li>
-      <li class="nav-item" *ngIf="currentUser?.role === 'executive'">
-        <a routerLink="/executive" routerLinkActive="active" class="nav-link">Executive</a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/reporting" routerLinkActive="active" class="nav-link">Reporting</a>
-      </li>
-      <li class="nav-item" *ngIf="currentUser?.role === 'staff'">
-        <a routerLink="/staff-user" routerLinkActive="active" class="nav-link">Staff User</a>
-      </li>
-      <li class="nav-item user-info">
-        <span class="user-name">{{ currentUser?.username }}</span>
-        <span class="user-role">({{ currentUser?.role }})</span>
-        <button class="logout-btn" (click)="logout()">Logout</button>
-      </li>
-    </ul>
+    <!-- Brand Section -->
+    <div class="brand-section">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+        </svg>
+      </div>
+      <div class="brand-content">
+        <h1 class="nav-title">{{ title }}</h1>
+        <span class="brand-subtitle">Advanced Analytics Platform</span>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="nav-center">
+      <ul class="nav-menu">
+        <li class="nav-item" *ngIf="currentUser?.role === 'admin'">
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="currentUser?.role === 'department-lead'">
+          <a routerLink="/department-lead" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">👨‍💼</span>
+            <span class="nav-text">Department</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="currentUser?.role === 'executive'">
+          <a routerLink="/executive" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-text">Executive</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/reporting" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">Reports</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="currentUser?.role === 'staff'">
+          <a routerLink="/staff-user" routerLinkActive="active" class="nav-link">
+            <span class="nav-icon">👤</span>
+            <span class="nav-text">Staff</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- User Section -->
+    <div class="user-section">
+      <div class="user-profile">
+        <div class="user-avatar">
+          {{ (currentUser?.username || 'U').charAt(0).toUpperCase() }}
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ currentUser?.username }}</span>
+          <span class="user-role">{{ currentUser?.role | titlecase }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" title="Logout">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+        </svg>
+      </button>
+    </div>
   </div>
+
+  <!-- Progress Bar -->
+  <div class="nav-progress-bar"></div>
 </nav>
 
 <main class="main-content">
