@@ -64,6 +64,10 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
   isExporting = false;
   exportingFormat = '';
   
+  // Modern header properties
+  showExportMenu = false;
+  autoRefreshEnabled = true;
+  
   // Export enum for template access
   readonly ExportFormats = ExportFormat;
 
@@ -82,6 +86,9 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadDashboardData();
     this.startAutoRefresh();
+    
+    // Add document click listener to close export menu
+    document.addEventListener('click', this.onDocumentClick.bind(this));
   }
 
   ngOnDestroy() {
@@ -90,6 +97,9 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
+    
+    // Remove document click listener
+    document.removeEventListener('click', this.onDocumentClick.bind(this));
   }
 
   loadDashboardData() {
@@ -797,8 +807,25 @@ export class ExecutiveComponent implements OnInit, OnDestroy {
     }, 5 * 60 * 1000);
   }
 
+  toggleExportMenu() {
+    this.showExportMenu = !this.showExportMenu;
+  }
+
+  onDocumentClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const exportDropdown = target.closest('.export-dropdown');
+    
+    if (!exportDropdown && this.showExportMenu) {
+      this.showExportMenu = false;
+    }
+  }
+
   exportDashboard(format: ExportFormat) {
     console.log('Export dashboard called with format:', format);
+    
+    // Close the export menu
+    this.showExportMenu = false;
+    
     if (!this.dashboardData) {
       console.log('No dashboard data available');
       this.showNotification('error', 'No dashboard data available for export');
