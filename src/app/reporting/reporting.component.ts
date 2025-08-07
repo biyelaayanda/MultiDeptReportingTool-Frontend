@@ -937,7 +937,10 @@ export class ReportingComponent implements OnInit, OnDestroy {
     };
 
     this.http.post(`${environment.apiUrl}/api/export/generate`, exportRequest, {
-      responseType: 'blob'
+      responseType: 'blob',
+      headers: {
+        'Authorization': `Bearer ${this.authService.getToken()}`
+      }
     }).subscribe({
       next: (blob: Blob) => {
         if (blob && blob.size > 0) {
@@ -955,7 +958,13 @@ export class ReportingComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Export failed:', err);
-        this.showNotification('error', 'Export failed. Please try again.');
+        if (err.status === 403) {
+          this.showNotification('error', 'You don\'t have permission to export this report');
+        } else if (err.status === 401) {
+          this.showNotification('error', 'Please login to export reports');
+        } else {
+          this.showNotification('error', 'Export failed. Please try again.');
+        }
         this.isExporting = false;
       }
     });
@@ -981,7 +990,10 @@ export class ReportingComponent implements OnInit, OnDestroy {
     };
 
     this.http.post(`${environment.apiUrl}/api/export/generate`, exportRequest, {
-      responseType: 'blob'
+      responseType: 'blob',
+      headers: {
+        'Authorization': `Bearer ${this.authService.getToken()}`
+      }
     }).subscribe({
       next: (blob: Blob) => {
         if (blob && blob.size > 0) {
@@ -999,7 +1011,13 @@ export class ReportingComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Export failed:', err);
-        this.showNotification('error', 'Export failed. Please try again.');
+        if (err.status === 403) {
+          this.showNotification('error', 'You don\'t have permission to export some selected reports');
+        } else if (err.status === 401) {
+          this.showNotification('error', 'Please login to export reports');
+        } else {
+          this.showNotification('error', 'Export failed. Please try again.');
+        }
         this.isExporting = false;
       }
     });

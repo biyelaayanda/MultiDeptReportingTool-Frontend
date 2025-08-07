@@ -682,7 +682,8 @@ export class DepartmentLeadComponent implements OnInit, OnDestroy {
       FileName: `${this.userDepartment.toLowerCase()}-dashboard-${new Date().toISOString().split('T')[0]}.${format.toLowerCase()}`,
       CustomFilters: {
         department: this.userDepartment,
-        timeframe: this.selectedTimeframe
+        timeframe: this.selectedTimeframe,
+        userRole: 'DepartmentLead'
       }
     };
 
@@ -706,7 +707,13 @@ export class DepartmentLeadComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Export failed:', err);
-        this.showNotification('error', `${this.exportingFormat} export failed. Please try again.`);
+        if (err.status === 403) {
+          this.showNotification('error', 'You don\'t have permission to export this department\'s data');
+        } else if (err.status === 401) {
+          this.showNotification('error', 'Please login to export dashboard');
+        } else {
+          this.showNotification('error', `${this.exportingFormat} export failed. Please try again.`);
+        }
         this.isExporting = false;
         this.exportingFormat = '';
       }
