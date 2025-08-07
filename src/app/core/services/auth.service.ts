@@ -28,7 +28,18 @@ export class AuthService {
         tap(response => {
           if (response && response.token) {
             localStorage.setItem(this.TOKEN_KEY, response.token);
+            
+            // Extract user ID from JWT token
+            let userId = 1; // Default fallback
+            try {
+              const payload = JSON.parse(atob(response.token.split('.')[1]));
+              userId = payload.sub || payload.userId || payload.id || 1;
+            } catch (error) {
+              console.warn('Could not extract user ID from token, using fallback:', error);
+            }
+            
             const user: User = {
+              id: userId,
               username: response.username,
               email: response.email,
               role: response.role

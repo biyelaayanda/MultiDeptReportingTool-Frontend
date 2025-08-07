@@ -578,15 +578,25 @@
               <div class="col-md-8">
                 <!-- Title -->
                 <div class="mb-3">
-                  <label for="title" class="form-label">Report Title *</label>
+                  <label for="title" class="form-label">
+                    Report Title *
+                    <span class="text-muted small ms-2">({{reportForm.title.length}}/200 characters)</span>
+                  </label>
                   <input type="text" 
                          class="form-control" 
                          id="title" 
                          [(ngModel)]="reportForm.title" 
                          name="title"
                          [class.is-invalid]="formErrors['title']"
+                         [class.is-valid]="reportForm.title.length >= 3 && reportForm.title.length <= 200 && !formErrors['title']"
+                         placeholder="Enter a descriptive title for your report..."
+                         maxlength="200"
                          required>
                   <div class="invalid-feedback">{{formErrors['title']}}</div>
+                  <div class="form-text" *ngIf="!formErrors['title']">
+                    <i class="fas fa-lightbulb me-1 text-info"></i>
+                    Use a clear, descriptive title that explains what this report covers
+                  </div>
                 </div>
 
                 <!-- Description -->
@@ -602,22 +612,38 @@
 
                 <!-- Report Type -->
                 <div class="mb-3">
-                  <label for="reportType" class="form-label">Report Type *</label>
+                  <label for="reportType" class="form-label">
+                    Report Type *
+                    <i class="fas fa-info-circle text-muted ms-1" 
+                       title="Choose the type of report you want to create"
+                       data-bs-toggle="tooltip"></i>
+                  </label>
                   <select class="form-select" 
                           id="reportType" 
                           [(ngModel)]="reportForm.reportType" 
                           name="reportType"
                           [class.is-invalid]="formErrors['reportType']"
                           required>
-                    <option value="">Select report type...</option>
+                    <option value="" disabled>
+                      {{reportTypes.length > 0 ? 'Select report type...' : 'Loading report types...'}}
+                    </option>
                     <option *ngFor="let type of reportTypes" [value]="type">{{type}}</option>
                   </select>
                   <div class="invalid-feedback">{{formErrors['reportType']}}</div>
+                  <div class="form-text text-info" *ngIf="reportTypes.length > 0">
+                    <i class="fas fa-list me-1"></i>
+                    {{reportTypes.length}} report types available
+                  </div>
                 </div>
 
                 <!-- Department -->
                 <div class="mb-3">
-                  <label for="departmentId" class="form-label">Department *</label>
+                  <label for="departmentId" class="form-label">
+                    Department *
+                    <i class="fas fa-info-circle text-muted ms-1" 
+                       title="Select the department this report belongs to"
+                       data-bs-toggle="tooltip"></i>
+                  </label>
                   <select class="form-select" 
                           id="departmentId" 
                           [(ngModel)]="reportForm.departmentId" 
@@ -625,13 +651,26 @@
                           [class.is-invalid]="formErrors['departmentId']"
                           [disabled]="!isAdmin && !isExecutive"
                           required>
-                    <option value="0">Select department...</option>
-                    <option *ngFor="let dept of departments" [value]="dept.id">{{dept.name}}</option>
+                    <option value="0" disabled>
+                      {{departments.length > 0 ? 'Select department...' : 'Loading departments...'}}
+                    </option>
+                    <option *ngFor="let dept of departments" [value]="dept.id">
+                      {{dept.name}}
+                      <span *ngIf="dept.description"> - {{dept.description}}</span>
+                    </option>
                   </select>
                   <div class="invalid-feedback">{{formErrors['departmentId']}}</div>
                   <div class="form-text" *ngIf="!isAdmin && !isExecutive">
-                    <i class="fas fa-info-circle me-1"></i>
-                    You can only create reports for your department: {{userDepartment}}
+                    <i class="fas fa-lock me-1 text-warning"></i>
+                    You can only create reports for your department: <strong>{{userDepartment}}</strong>
+                  </div>
+                  <div class="form-text" *ngIf="(isAdmin || isExecutive) && departments.length === 0" class="text-warning">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    No departments available. Please contact your administrator.
+                  </div>
+                  <div class="form-text" *ngIf="(isAdmin || isExecutive) && departments.length > 0" class="text-info">
+                    <i class="fas fa-crown me-1"></i>
+                    As {{currentUser?.role}}, you can create reports for any department ({{departments.length}} available)
                   </div>
                 </div>
 
@@ -639,27 +678,42 @@
                 <div class="row">
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label for="periodStart" class="form-label">Period Start *</label>
+                      <label for="periodStart" class="form-label">
+                        Period Start *
+                        <i class="fas fa-calendar-alt text-muted ms-1"></i>
+                      </label>
                       <input type="date" 
                              class="form-control" 
                              id="periodStart" 
                              [(ngModel)]="reportForm.reportPeriodStart" 
                              name="periodStart"
                              [class.is-invalid]="formErrors['period']"
+                             [class.is-valid]="reportForm.reportPeriodStart && reportForm.reportPeriodEnd && reportForm.reportPeriodStart < reportForm.reportPeriodEnd && !formErrors['period']"
                              required>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label for="periodEnd" class="form-label">Period End *</label>
+                      <label for="periodEnd" class="form-label">
+                        Period End *
+                        <i class="fas fa-calendar-check text-muted ms-1"></i>
+                      </label>
                       <input type="date" 
                              class="form-control" 
                              id="periodEnd" 
                              [(ngModel)]="reportForm.reportPeriodEnd" 
                              name="periodEnd"
                              [class.is-invalid]="formErrors['period']"
+                             [class.is-valid]="reportForm.reportPeriodStart && reportForm.reportPeriodEnd && reportForm.reportPeriodStart < reportForm.reportPeriodEnd && !formErrors['period']"
                              required>
                       <div class="invalid-feedback">{{formErrors['period']}}</div>
+                    </div>
+                  </div>
+                  <div class="col-12" *ngIf="!formErrors['period'] && reportForm.reportPeriodStart && reportForm.reportPeriodEnd">
+                    <div class="form-text text-success">
+                      <i class="fas fa-check-circle me-1"></i>
+                      Report period: {{formatDate(reportForm.reportPeriodStart)}} to {{formatDate(reportForm.reportPeriodEnd)}}
+                      ({{getDaysBetween(reportForm.reportPeriodStart, reportForm.reportPeriodEnd)}} days)
                     </div>
                   </div>
                 </div>
@@ -669,14 +723,72 @@
                 <!-- Quick Actions -->
                 <div class="card bg-light">
                   <div class="card-body">
-                    <h6 class="card-title">Quick Actions</h6>
+                    <h6 class="card-title">
+                      <i class="fas fa-magic me-1"></i>Quick Actions
+                    </h6>
                     <div class="d-grid gap-2">
                       <button type="button" class="btn btn-outline-primary btn-sm" (click)="resetForm()">
                         <i class="fas fa-undo me-1"></i>Reset Form
                       </button>
-                      <button type="button" class="btn btn-outline-secondary btn-sm">
+                      
+                      <!-- Quick Date Presets -->
+                      <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100" 
+                                type="button" 
+                                data-bs-toggle="dropdown">
+                          <i class="fas fa-calendar-plus me-1"></i>Quick Dates
+                        </button>
+                        <ul class="dropdown-menu w-100">
+                          <li><h6 class="dropdown-header">Set Report Period</h6></li>
+                          <li>
+                            <a class="dropdown-item" (click)="setDatePeriod('thisMonth')">
+                              <i class="fas fa-calendar me-2"></i>This Month
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item" (click)="setDatePeriod('lastMonth')">
+                              <i class="fas fa-calendar-minus me-2"></i>Last Month
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item" (click)="setDatePeriod('thisQuarter')">
+                              <i class="fas fa-calendar-week me-2"></i>This Quarter
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item" (click)="setDatePeriod('lastQuarter')">
+                              <i class="fas fa-calendar-week me-2"></i>Last Quarter
+                            </a>
+                          </li>
+                          <li>
+                            <a class="dropdown-item" (click)="setDatePeriod('thisYear')">
+                              <i class="fas fa-calendar-alt me-2"></i>This Year
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      <button type="button" class="btn btn-outline-info btn-sm" (click)="saveDraft()" [disabled]="!reportForm.title.trim()">
                         <i class="fas fa-save me-1"></i>Save as Draft
                       </button>
+                    </div>
+                    
+                    <!-- Form Status Indicator -->
+                    <div class="mt-3 p-2 rounded" [ngClass]="{
+                      'bg-success text-white': isFormValid(),
+                      'bg-warning text-dark': !isFormValid() && (reportForm.title.trim() || reportForm.reportType),
+                      'bg-light text-muted': !reportForm.title.trim() && !reportForm.reportType
+                    }">
+                      <small class="d-flex align-items-center">
+                        <i class="fas" [ngClass]="{
+                          'fa-check-circle': isFormValid(),
+                          'fa-exclamation-triangle': !isFormValid() && (reportForm.title.trim() || reportForm.reportType),
+                          'fa-info-circle': !reportForm.title.trim() && !reportForm.reportType
+                        }" class="me-1"></i>
+                        <span *ngIf="isFormValid()">Form is ready</span>
+                        <span *ngIf="!isFormValid() && (reportForm.title.trim() || reportForm.reportType)">Form incomplete</span>
+                        <span *ngIf="!reportForm.title.trim() && !reportForm.reportType">Fill form fields</span>
+                      </small>
                     </div>
                   </div>
                 </div>

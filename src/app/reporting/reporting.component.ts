@@ -217,7 +217,7 @@ export class ReportingComponent implements OnInit, OnDestroy {
     }
 
     // Load departments, report types, and reports
-    const departments$ = this.http.get<Department[]>(`${environment.apiUrl}/api/Departments`);
+    const departments$ = this.http.get(`${environment.apiUrl}/api/Departments`);
     const reportTypes$ = this.http.get<string[]>(`${environment.apiUrl}/api/Reports/types`);
     const reports$ = this.loadReports();
 
@@ -232,17 +232,31 @@ export class ReportingComponent implements OnInit, OnDestroy {
         console.log('=== API RESPONSE RECEIVED ===');
         console.log('Raw API response:', data);
         
-        // Ensure departments is always an array
-        this.departments = Array.isArray(data.departments) ? data.departments : [];
+        // Process departments data with better error handling
+        this.processDepartmentsData(data.departments);
         
         // Ensure reportTypes is always an array  
-        this.reportTypes = Array.isArray(data.reportTypes) ? data.reportTypes : [];
+        this.reportTypes = Array.isArray(data.reportTypes) ? data.reportTypes : [
+          'Monthly Financial',
+          'Quarterly Budget', 
+          'Annual Revenue',
+          'Weekly System Status',
+          'Monthly Security',
+          'Performance Review',
+          'Compliance Audit'
+        ];
         
         // Process reports data
         this.processReportsData(data.reports);
         
-        console.log('Processed reports count:', this.reports.length);
-        console.log('First few reports:', this.reports.slice(0, 3));
+        console.log('Processed data:', {
+          departments: this.departments.length,
+          reportTypes: this.reportTypes.length,
+          reports: this.reports.length
+        });
+        
+        // Initialize form with correct department if user is not admin/executive
+        this.initializeForm();
         
         this.isLoading = false;
       },
@@ -291,6 +305,52 @@ export class ReportingComponent implements OnInit, OnDestroy {
     console.log('Making request to:', `${environment.apiUrl}/api/Reports`);
     
     return this.http.get(`${environment.apiUrl}/api/Reports`, { params });
+  }
+
+  processDepartmentsData(data: any) {
+    console.log('=== PROCESSING DEPARTMENTS DATA ===');
+    console.log('Input departments data:', data);
+    
+    // Handle different response formats for departments
+    let departmentsArray = [];
+    
+    if (data?.success && data?.data) {
+      // Backend returns {success, data} format
+      departmentsArray = Array.isArray(data.data) ? data.data : [];
+      console.log('Found backend format with success flag, departments count:', departmentsArray.length);
+    } else if (Array.isArray(data)) {
+      // Direct array response
+      departmentsArray = data;
+      console.log('Found direct array format, departments count:', departmentsArray.length);
+    } else {
+      console.warn('Unexpected departments data format:', data);
+      departmentsArray = [];
+    }
+    
+    this.departments = departmentsArray.map((dept: any) => ({
+      id: dept.id,
+      name: dept.name,
+      description: dept.description || ''
+    }));
+    
+    console.log('Processed departments:', this.departments);
+  }
+
+  initializeForm() {
+    // Set default department based on user role
+    const defaultDepartmentId = (this.isAdmin || this.isExecutive) ? 0 : this.userDepartmentId;
+    
+    this.reportForm = {
+      title: '',
+      description: '',
+      reportType: '',
+      departmentId: defaultDepartmentId,
+      reportPeriodStart: new Date(),
+      reportPeriodEnd: new Date(),
+      reportData: []
+    };
+    
+    console.log('Form initialized with default department ID:', defaultDepartmentId);
   }
 
   processReportsData(data: any) {
@@ -628,32 +688,57 @@ export class ReportingComponent implements OnInit, OnDestroy {
     // Set default department based on user role
     const defaultDepartmentId = (this.isAdmin || this.isExecutive) ? 0 : this.userDepartmentId;
     
+    // Set default dates (current month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
     this.reportForm = {
       title: '',
       description: '',
       reportType: '',
       departmentId: defaultDepartmentId,
-      reportPeriodStart: new Date(),
-      reportPeriodEnd: new Date(),
+      reportPeriodStart: startOfMonth,
+      reportPeriodEnd: endOfMonth,
       reportData: []
     };
+    
+    // Clear data field form
+    this.newDataField = {
+      fieldName: '',
+      fieldType: 'Text',
+      fieldValue: '',
+      numericValue: undefined,
+      dateValue: undefined
+    };
+    
     this.clearErrors();
+    console.log('Form reset with department ID:', defaultDepartmentId);
   }
 
   validateForm(): boolean {
     this.formErrors = {};
     let isValid = true;
 
+    // Title validation
     if (!this.reportForm.title.trim()) {
       this.formErrors['title'] = 'Report title is required';
       isValid = false;
+    } else if (this.reportForm.title.trim().length < 3) {
+      this.formErrors['title'] = 'Report title must be at least 3 characters';
+      isValid = false;
+    } else if (this.reportForm.title.trim().length > 200) {
+      this.formErrors['title'] = 'Report title must be less than 200 characters';
+      isValid = false;
     }
 
+    // Report type validation
     if (!this.reportForm.reportType) {
       this.formErrors['reportType'] = 'Report type is required';
       isValid = false;
     }
 
+    // Department validation
     if (!this.reportForm.departmentId || this.reportForm.departmentId === 0) {
       this.formErrors['departmentId'] = 'Department is required';
       isValid = false;
@@ -665,11 +750,33 @@ export class ReportingComponent implements OnInit, OnDestroy {
       isValid = false;
     }
 
-    if (this.reportForm.reportPeriodStart >= this.reportForm.reportPeriodEnd) {
+    // Date validation
+    if (!this.reportForm.reportPeriodStart) {
+      this.formErrors['period'] = 'Start date is required';
+      isValid = false;
+    } else if (!this.reportForm.reportPeriodEnd) {
+      this.formErrors['period'] = 'End date is required';
+      isValid = false;
+    } else if (this.reportForm.reportPeriodStart >= this.reportForm.reportPeriodEnd) {
       this.formErrors['period'] = 'End date must be after start date';
       isValid = false;
+    } else {
+      // Check if dates are not too far in the future
+      const futureLimit = new Date();
+      futureLimit.setFullYear(futureLimit.getFullYear() + 1);
+      
+      if (this.reportForm.reportPeriodStart > futureLimit) {
+        this.formErrors['period'] = 'Start date cannot be more than 1 year in the future';
+        isValid = false;
+      }
+      
+      if (this.reportForm.reportPeriodEnd > futureLimit) {
+        this.formErrors['period'] = 'End date cannot be more than 1 year in the future';
+        isValid = false;
+      }
     }
 
+    console.log('Form validation result:', { isValid, errors: this.formErrors });
     return isValid;
   }
 
@@ -1047,6 +1154,90 @@ export class ReportingComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit'
     }).format(date);
+  }
+
+  getDaysBetween(startDate: Date, endDate: Date): number {
+    if (!startDate || !endDate) return 0;
+    const timeDiff = endDate.getTime() - startDate.getTime();
+    return Math.ceil(timeDiff / (1000 * 3600 * 24));
+  }
+
+  setDatePeriod(period: string) {
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (period) {
+      case 'thisMonth':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+      case 'lastMonth':
+        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+        break;
+      case 'thisQuarter':
+        const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+        startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
+        endDate = new Date(now.getFullYear(), quarterStartMonth + 3, 0);
+        break;
+      case 'lastQuarter':
+        const lastQuarterStartMonth = Math.floor(now.getMonth() / 3) * 3 - 3;
+        startDate = new Date(now.getFullYear(), lastQuarterStartMonth, 1);
+        endDate = new Date(now.getFullYear(), lastQuarterStartMonth + 3, 0);
+        break;
+      case 'thisYear':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        endDate = new Date(now.getFullYear(), 11, 31);
+        break;
+      default:
+        return;
+    }
+
+    this.reportForm.reportPeriodStart = startDate;
+    this.reportForm.reportPeriodEnd = endDate;
+    
+    console.log(`Set date period to ${period}:`, { startDate, endDate });
+  }
+
+  saveDraft() {
+    if (!this.reportForm.title.trim()) {
+      this.showNotification('warning', 'Please enter a title before saving as draft');
+      return;
+    }
+
+    // Set status to draft and save
+    const draftData = {
+      ...this.reportForm,
+      status: 'Draft'
+    };
+
+    this.isLoading = true;
+
+    this.http.post<Report>(`${environment.apiUrl}/api/Reports`, draftData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (report) => {
+          this.showNotification('success', 'Report saved as draft successfully');
+          this.loadReportsData();
+          this.switchView('details', report);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error saving draft:', err);
+          this.showNotification('error', 'Failed to save draft');
+          this.isLoading = false;
+        }
+      });
+  }
+
+  isFormValid(): boolean {
+    return this.reportForm.title.trim().length >= 3 &&
+           this.reportForm.reportType !== '' &&
+           this.reportForm.departmentId > 0 &&
+           this.reportForm.reportPeriodStart &&
+           this.reportForm.reportPeriodEnd &&
+           this.reportForm.reportPeriodStart < this.reportForm.reportPeriodEnd;
   }
 
   // Navigation method to go back to the appropriate dashboard
