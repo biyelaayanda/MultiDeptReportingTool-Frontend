@@ -90,7 +90,7 @@ export class ReportingComponent implements OnInit, OnDestroy {
   statusFilter = 'all';
   typeFilter = 'all';
   departmentFilter = 'all';
-  dateRangeFilter = '30d';
+  dateRangeFilter = 'all'; // Changed from '30d' to 'all' to show all reports by default
   
   // Pagination - Simple client-side approach
   currentPage = 1;
@@ -165,7 +165,8 @@ export class ReportingComponent implements OnInit, OnDestroy {
       console.log('User Role:', this.currentUser.role, {
         isAdmin: this.isAdmin,
         isDepartmentLead: this.isDepartmentLead,
-        isExecutive: this.isExecutive
+        isExecutive: this.isExecutive,
+        isStaff: userRole === 'staff'
       });
       
       // Extract department info from token
@@ -174,6 +175,18 @@ export class ReportingComponent implements OnInit, OnDestroy {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           this.userDepartmentId = parseInt(payload.DepartmentId) || 0;
+          
+          // Also extract user ID for staff filtering
+          const userId = parseInt(payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']) || 0;
+          if (this.currentUser) {
+            this.currentUser.id = userId;
+          }
+          
+          console.log('User details:', {
+            userId: userId,
+            departmentId: this.userDepartmentId,
+            role: userRole
+          });
           
           // Map department IDs to names
           const departmentMap: { [key: string]: string } = {
@@ -196,6 +209,13 @@ export class ReportingComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
 
+    // Check if user is authenticated
+    if (!this.authService.isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login');
+      this.router.navigate(['/auth']);
+      return;
+    }
+
     // Load departments, report types, and reports
     const departments$ = this.http.get<Department[]>(`${environment.apiUrl}/api/Departments`);
     const reportTypes$ = this.http.get<string[]>(`${environment.apiUrl}/api/Reports/types`);
@@ -209,6 +229,9 @@ export class ReportingComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (data) => {
+        console.log('=== API RESPONSE RECEIVED ===');
+        console.log('Raw API response:', data);
+        
         // Ensure departments is always an array
         this.departments = Array.isArray(data.departments) ? data.departments : [];
         
@@ -218,58 +241,79 @@ export class ReportingComponent implements OnInit, OnDestroy {
         // Process reports data
         this.processReportsData(data.reports);
         
+        console.log('Processed reports count:', this.reports.length);
+        console.log('First few reports:', this.reports.slice(0, 3));
+        
         this.isLoading = false;
       },
       error: (err) => {
+        console.error('=== API ERROR ===');
         console.error('Error loading initial data:', err);
-        this.error = 'Failed to load reports data';
+        console.error('Error status:', err.status);
+        console.error('Error message:', err.message);
+        console.error('Full error object:', err);
+        
+        this.error = 'Failed to load reports data. Please ensure you are logged in.';
         this.isLoading = false;
         
-        // Load mock data for development
-        this.loadMockData();
+        // If authentication error, redirect to login
+        if (err.status === 401) {
+          console.log('Authentication error, redirecting to login');
+          this.router.navigate(['/auth']);
+        } else {
+          // Load mock data for development
+          console.log('Loading mock data due to error');
+          this.loadMockDataForTesting();
+        }
       }
     });
   }
 
   loadReports() {
-    // Simplified: Load ALL reports without server-side pagination
-    const params: any = {};
+    // For client-side pagination, we need to fetch ALL reports
+    // The backend now handles role-based filtering automatically based on JWT token
+    const params: any = {
+      pageSize: 1000, // Large number to get all reports for the current user's role
+      page: 1
+    };
 
-    // Apply role-based filtering at API level only
-    if (this.isAdmin || this.isExecutive) {
-      // Admins and Executives can see all reports or filter by specific department
-      if (this.departmentFilter !== 'all') {
-        params.departmentId = this.departmentFilter;
-      }
-      console.log('Admin/Executive - Loading all reports');
-    } else if (this.isDepartmentLead) {
-      // Department leads can only see reports from their department
-      params.departmentId = this.userDepartmentId.toString();
-      console.log('Department Lead - Loading reports for department:', this.userDepartmentId);
-    } else {
-      // Regular staff can only see their own reports
-      params.createdByUserId = this.currentUser?.id?.toString();
-      console.log('Staff - Loading own reports for user:', this.currentUser?.id);
+    // Only apply department filter if explicitly selected by admin/executive
+    if ((this.isAdmin || this.isExecutive) && this.departmentFilter !== 'all') {
+      params.departmentId = this.departmentFilter;
     }
 
+    console.log('=== DEBUGGING REPORTS LOAD ===');
+    console.log('User authenticated:', this.authService.isAuthenticated());
+    console.log('JWT Token exists:', !!this.authService.getToken());
+    console.log('Current user:', this.authService.getCurrentUser());
+    console.log('Loading reports with role-based filtering handled by backend');
     console.log('API Request params:', params);
+    console.log('Making request to:', `${environment.apiUrl}/api/Reports`);
+    
     return this.http.get(`${environment.apiUrl}/api/Reports`, { params });
   }
 
   processReportsData(data: any) {
+    console.log('=== PROCESSING REPORTS DATA ===');
+    console.log('Input data:', data);
+    
     // Handle different response formats
     let reportsArray = [];
     
     if (data?.success && data?.data) {
       // Backend returns {success, data, totalCount} format
       reportsArray = Array.isArray(data.data) ? data.data : [];
+      console.log('Found backend format with success flag, reports count:', reportsArray.length);
     } else if (Array.isArray(data)) {
       // Direct array response
       reportsArray = data;
+      console.log('Found direct array format, reports count:', reportsArray.length);
     } else {
       console.warn('Unexpected data format:', data);
       reportsArray = [];
     }
+    
+    console.log('Reports array before mapping:', reportsArray);
     
     this.reports = reportsArray.map((report: any) => ({
       id: report.id,
@@ -278,16 +322,16 @@ export class ReportingComponent implements OnInit, OnDestroy {
       reportType: report.reportType,
       status: report.status,
       departmentId: report.departmentId,
-      departmentName: this.getDepartmentName(report.departmentId),
+      departmentName: report.departmentName || this.getDepartmentName(report.departmentId),
       createdByUserId: report.createdByUserId,
-      createdBy: report.createdBy || 'Unknown',
+      createdBy: report.createdByUserName || report.createdBy || 'Unknown',
       reportPeriodStart: new Date(report.reportPeriodStart),
       reportPeriodEnd: new Date(report.reportPeriodEnd),
       createdAt: new Date(report.createdAt),
       submittedAt: report.submittedAt ? new Date(report.submittedAt) : undefined,
       approvedAt: report.approvedAt ? new Date(report.approvedAt) : undefined,
       approvedByUserId: report.approvedByUserId,
-      approvedBy: report.approvedBy,
+      approvedBy: report.approvedByUserName || report.approvedBy,
       comments: report.comments,
       reportData: report.reportData || []
     }));
@@ -296,6 +340,56 @@ export class ReportingComponent implements OnInit, OnDestroy {
     
     // Apply filters and pagination
     this.applyFilters();
+  }
+
+  loadMockDataForTesting() {
+    // Create mock departments and report types
+    this.departments = [
+      { id: 1, name: 'Finance', description: 'Financial Management' },
+      { id: 2, name: 'Human Resources', description: 'HR Management' },
+      { id: 3, name: 'Operations', description: 'Operations Management' },
+      { id: 4, name: 'Compliance', description: 'Compliance Management' },
+      { id: 5, name: 'Information Technology', description: 'IT Management' }
+    ];
+
+    this.reportTypes = [
+      'Monthly Financial',
+      'Quarterly Budget', 
+      'Annual Revenue',
+      'Weekly System Status',
+      'Monthly Security',
+      'Performance Review',
+      'Compliance Audit'
+    ];
+
+    // Create 50+ mock reports for pagination testing
+    this.reports = [];
+    for (let i = 1; i <= 57; i++) {
+      this.reports.push({
+        id: i,
+        title: `Test Report ${i}`,
+        description: `This is a test report number ${i} for pagination testing purposes.`,
+        reportType: this.reportTypes[i % this.reportTypes.length],
+        status: ['Draft', 'Pending', 'Approved', 'Overdue'][i % 4] as any,
+        departmentId: ((i % 5) + 1),
+        departmentName: this.departments[(i % 5)].name,
+        createdByUserId: ((i % 10) + 1),
+        createdBy: `User ${((i % 10) + 1)}`,
+        reportPeriodStart: new Date(2025, 6, 1),
+        reportPeriodEnd: new Date(2025, 6, 31),
+        createdAt: new Date(2025, 7, i % 28 + 1),
+        submittedAt: i % 3 === 0 ? new Date(2025, 7, (i % 28) + 2) : undefined,
+        approvedAt: i % 4 === 0 ? new Date(2025, 7, (i % 28) + 3) : undefined,
+        approvedByUserId: i % 4 === 0 ? 2 : undefined,
+        approvedBy: i % 4 === 0 ? 'Admin User' : undefined,
+        comments: i % 3 === 0 ? `Comments for report ${i}` : undefined,
+        reportData: []
+      });
+    }
+
+    console.log('Mock data loaded:', this.reports.length, 'reports');
+    this.applyFilters();
+    this.isLoading = false;
   }
 
   loadMockData() {
@@ -361,41 +455,61 @@ export class ReportingComponent implements OnInit, OnDestroy {
   applyFilters() {
     let filtered = [...this.reports];
 
+    console.log('=== APPLYING FILTERS DEBUG ===');
     console.log('Starting with reports:', filtered.length);
+    console.log('Current filter values:', {
+      searchTerm: this.searchTerm,
+      statusFilter: this.statusFilter,
+      typeFilter: this.typeFilter,
+      departmentFilter: this.departmentFilter,
+      dateRangeFilter: this.dateRangeFilter
+    });
 
     // Search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
+      const beforeCount = filtered.length;
       filtered = filtered.filter(report => 
         report.title.toLowerCase().includes(term) ||
         report.description.toLowerCase().includes(term) ||
         report.reportType.toLowerCase().includes(term) ||
         report.createdBy.toLowerCase().includes(term)
       );
+      console.log(`Search filter: ${beforeCount} → ${filtered.length} (term: "${this.searchTerm}")`);
     }
 
     // Status filter
     if (this.statusFilter !== 'all') {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(report => report.status === this.statusFilter);
+      console.log(`Status filter: ${beforeCount} → ${filtered.length} (status: "${this.statusFilter}")`);
     }
 
     // Type filter
     if (this.typeFilter !== 'all') {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(report => report.reportType === this.typeFilter);
+      console.log(`Type filter: ${beforeCount} → ${filtered.length} (type: "${this.typeFilter}")`);
     }
 
     // Department filter (for admins and executives only - others are pre-filtered by server)
     if ((this.isAdmin || this.isExecutive) && this.departmentFilter !== 'all') {
+      const beforeCount = filtered.length;
       filtered = filtered.filter(report => report.departmentId.toString() === this.departmentFilter);
+      console.log(`Department filter: ${beforeCount} → ${filtered.length} (dept: "${this.departmentFilter}")`);
     }
 
     // Date range filter
     if (this.dateRangeFilter !== 'all') {
+      const beforeCount = filtered.length;
       const days = this.getFilterDays(this.dateRangeFilter);
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
       
       filtered = filtered.filter(report => report.createdAt >= cutoffDate);
+      console.log(`Date range filter: ${beforeCount} → ${filtered.length} (range: "${this.dateRangeFilter}", cutoff: ${cutoffDate.toISOString()})`);
+    } else {
+      console.log('Date range filter: SKIPPED (showing all dates)');
     }
 
     this.filteredReports = filtered;
@@ -404,6 +518,13 @@ export class ReportingComponent implements OnInit, OnDestroy {
     // Calculate pagination
     this.totalReports = this.filteredReports.length;
     this.totalPages = Math.ceil(this.totalReports / this.pageSize);
+    
+    console.log('Pagination Debug:', {
+      totalReports: this.totalReports,
+      pageSize: this.pageSize,
+      totalPages: this.totalPages,
+      currentPage: this.currentPage
+    });
     
     // Ensure current page is valid
     if (this.currentPage > this.totalPages) {

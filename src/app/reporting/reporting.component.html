@@ -341,7 +341,7 @@
               </li>
               
               <!-- First Page -->
-              <li class="page-item" [class.active]="currentPage === 1" *ngIf="totalPages > 1">
+              <li class="page-item" [class.active]="currentPage === 1">
                 <a class="page-link" (click)="onPageChange(1)" style="cursor: pointer;">1</a>
               </li>
               
@@ -365,7 +365,7 @@
               </li>
               
               <!-- Last Page -->
-              <li class="page-item" [class.active]="currentPage === totalPages" *ngIf="totalPages > 1 && totalPages > 1">
+              <li class="page-item" [class.active]="currentPage === totalPages" *ngIf="totalPages > 1">
                 <a class="page-link" (click)="onPageChange(totalPages)" style="cursor: pointer;">{{totalPages}}</a>
               </li>
               
