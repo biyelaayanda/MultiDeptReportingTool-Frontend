@@ -1,6 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ChartComponent } from '../shared/components/chart.component';
 import { AuthService } from '../core/services/auth.service';
 import { ExportService } from '../core/services/export.service';
 import { environment } from '../../environments/environment';
@@ -49,7 +53,14 @@ interface DepartmentReport {
 @Component({
   selector: 'app-department-lead',
   templateUrl: './department-lead.component.html',
-  styleUrls: ['./department-lead.component.css']
+  styleUrls: ['./department-lead.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ChartComponent
+  ]
 })
 export class DepartmentLeadComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();

@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration } from 'chart.js';
 import { ChartDataPoint, EnhancedChartOptions } from './base-chart.component';
 
@@ -13,6 +14,8 @@ export interface BarChartDataset {
 
 @Component({
   selector: 'app-bar-chart',
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="bar-chart-container">
       <div class="chart-header" *ngIf="options?.title">

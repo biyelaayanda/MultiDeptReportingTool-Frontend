@@ -39,14 +39,12 @@ import { BarChartComponent } from './bar-chart.component';
 import { RadarChartComponent } from './radar-chart.component';
 
 @NgModule({
-  declarations: [
+  imports: [
+    CommonModule,
     BaseChartComponent,
     LineChartComponent,
     BarChartComponent,
     RadarChartComponent
-  ],
-  imports: [
-    CommonModule
   ],
   exports: [
     BaseChartComponent,

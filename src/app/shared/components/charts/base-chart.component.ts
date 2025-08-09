@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, ChartType, Plugin, TooltipItem } from 'chart.js';
 
 // Register Chart.js components
@@ -57,6 +58,8 @@ export interface EnhancedChartOptions {
 
 @Component({
   selector: 'app-base-chart',
+  standalone: true,
+  imports: [CommonModule],
   template: `
     <div class="chart-container" [class.interactive]="options?.interactive">
       <div class="chart-header" *ngIf="options?.title || options?.subtitle">

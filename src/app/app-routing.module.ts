@@ -1,5 +1,4 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { DashboardComponent } from './admin/dashboard/dashboard.component';
 import { DepartmentLeadComponent } from './department-lead/department-lead.component';
 import { ExecutiveComponent } from './executive/executive.component';
@@ -9,7 +8,7 @@ import { AuthComponent } from './core/auth/auth.component';
 import { RegisterComponent } from './register/register.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
-const routes: Routes = [
+export const routes: Routes = [
   { path: '', redirectTo: '/auth', pathMatch: 'full' },
   { path: 'auth', component: AuthComponent },
   { path: 'register', component: RegisterComponent },
@@ -45,8 +44,4 @@ const routes: Routes = [
   { path: '**', redirectTo: '/auth' }
 ];
 
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
-})
-export class AppRoutingModule { }
+// Routes are now exported directly

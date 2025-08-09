@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule, DatePipe, DecimalPipe, NgIf, NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
 import { StaffService, StaffDashboardData, StaffNotification } from '../core/services/staff.service';
 import { Subject, interval, takeUntil, catchError, of, finalize } from 'rxjs';
@@ -17,7 +19,17 @@ interface QuickAction {
 @Component({
   selector: 'app-staff-user',
   templateUrl: './staff-user.component.html',
-  styleUrls: ['./staff-user.component.css']
+  styleUrls: ['./staff-user.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    NgIf,
+    NgFor,
+    DatePipe,
+    DecimalPipe
+  ]
 })
 export class StaffUserComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();

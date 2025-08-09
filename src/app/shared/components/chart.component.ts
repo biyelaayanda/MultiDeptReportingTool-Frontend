@@ -1,4 +1,5 @@
 import { Component, Input, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -11,7 +12,9 @@ Chart.register(...registerables);
       width: 100% !important;
       height: 100% !important;
     }
-  `]
+  `],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class ChartComponent implements AfterViewInit, OnDestroy {
   @ViewChild('chartCanvas', { static: true }) chartCanvas!: ElementRef<HTMLCanvasElement>;

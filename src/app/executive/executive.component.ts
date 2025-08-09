@@ -1,5 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { BaseChartComponent } from '../shared/components/charts/base-chart.component';
+import { BarChartComponent } from '../shared/components/charts/bar-chart.component';
+import { LineChartComponent } from '../shared/components/charts/line-chart.component';
 import { HttpClient } from '@angular/common/http';
 import { AnalyticsService } from '../core/services/analytics.service';
 import { ExportService } from '../core/services/export.service';
@@ -19,7 +25,16 @@ import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-executive',
   templateUrl: './executive.component.html',
-  styleUrls: ['./executive.component.css']
+  styleUrls: ['./executive.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    BaseChartComponent,
+    BarChartComponent,
+    LineChartComponent
+  ]
 })
 export class ExecutiveComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
