@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, RadialLinearScale } from 'chart.js';
 import { EnhancedChartOptions } from './base-chart.component';
 
@@ -118,7 +119,9 @@ export interface RadarDataset {
         align-items: center;
       }
     }
-  `]
+  `],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class RadarChartComponent implements OnInit {
   @ViewChild('chartCanvas', { static: true }) chartCanvas!: ElementRef<HTMLCanvasElement>;

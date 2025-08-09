@@ -41,7 +41,7 @@
             <span *ngIf="!isExporting">Export</span>
             <span *ngIf="isExporting">Exporting...</span>
           </button>
-          <ul class="dropdown-menu" *dropdownMenu>
+          <ul class="dropdown-menu">
             <li><h6 class="dropdown-header">Export Format</h6></li>
             <li>
               <a class="dropdown-item" (click)="exportFormat = ExportFormat.PDF; exportSelectedReports()">
@@ -295,7 +295,7 @@
                                 title="More Actions">
                           <i class="fas fa-ellipsis-h"></i>
                         </button>
-                        <ul class="dropdown-menu" *dropdownMenu>
+                        <ul class="dropdown-menu">
                           <li>
                             <a class="dropdown-item" (click)="exportReport(report)">
                               <i class="fas fa-download me-2"></i>Export
@@ -524,7 +524,7 @@
                           dropdownToggle>
                     <i class="fas fa-download me-2"></i>Export Report
                   </button>
-                  <ul class="dropdown-menu w-100" *dropdownMenu>
+                  <ul class="dropdown-menu w-100">
                     <li>
                       <a class="dropdown-item" (click)="exportFormat = ExportFormat.PDF; exportReport(selectedReport)">
                         <i class="fas fa-file-pdf text-danger me-2"></i>PDF
