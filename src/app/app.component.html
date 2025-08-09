@@ -22,6 +22,37 @@
             <span class="nav-text">Dashboard</span>
           </a>
         </li>
+        
+        <!-- AI Analytics Dropdown Menu -->
+        <li class="nav-item dropdown" *ngIf="currentUser?.role === 'admin' || currentUser?.role === 'executive' || currentUser?.role === 'department-lead'">
+          <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="nav-icon">🧠</span>
+            <span class="nav-text">AI Analytics</span>
+            <i class="fas fa-chevron-down ms-1"></i>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" routerLink="/ai-analytics">
+              <i class="fas fa-chart-line me-2"></i>AI Dashboard
+            </a></li>
+            <li><a class="dropdown-item" routerLink="/ai-analytics" [queryParams]="{tab: 'predictions'}">
+              <i class="fas fa-crystal-ball me-2"></i>Predictions
+            </a></li>
+            <li><a class="dropdown-item" routerLink="/ai-analytics" [queryParams]="{tab: 'anomalies'}">
+              <i class="fas fa-exclamation-triangle me-2"></i>Anomaly Detection
+            </a></li>
+            <li><a class="dropdown-item" routerLink="/ai-analytics" [queryParams]="{tab: 'insights'}">
+              <i class="fas fa-lightbulb me-2"></i>AI Insights
+            </a></li>
+            <li><a class="dropdown-item" routerLink="/ai-analytics" [queryParams]="{tab: 'quality'}">
+              <i class="fas fa-check-circle me-2"></i>Data Quality
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" routerLink="/ai-test">
+              <i class="fas fa-flask me-2"></i>AI Test Lab
+            </a></li>
+          </ul>
+        </li>
+        
         <li class="nav-item" *ngIf="currentUser?.role === 'department-lead'">
           <a routerLink="/department-lead" routerLinkActive="active" class="nav-link">
             <span class="nav-icon">👨‍💼</span>

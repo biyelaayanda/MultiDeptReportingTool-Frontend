@@ -1,3 +1,163 @@
-<p>
-  dashboard works!
-</p>
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">
+        <i class="fas fa-chart-line"></i>
+        Administrative Dashboard
+      </h1>
+      <p class="dashboard-subtitle">Comprehensive overview with AI-powered insights</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" routerLink="/ai-analytics">
+        <i class="fas fa-brain"></i>
+        AI Analytics
+      </button>
+    </div>
+  </div>
+
+  <!-- AI Features Highlight Section -->
+  <div class="ai-features-section mb-4">
+    <h2 class="section-title">
+      <i class="fas fa-robot text-primary"></i>
+      AI-Powered Features
+    </h2>
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <div class="feature-card ai-predictions" routerLink="/ai-analytics" [queryParams]="{tab: 'predictions'}">
+          <div class="feature-icon">🔮</div>
+          <h5>Smart Predictions</h5>
+          <p>Advanced forecasting with multiple AI algorithms</p>
+          <div class="feature-badge">ML-Powered</div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="feature-card ai-anomalies" routerLink="/ai-analytics" [queryParams]="{tab: 'anomalies'}">
+          <div class="feature-icon">🚨</div>
+          <h5>Anomaly Detection</h5>
+          <p>Real-time monitoring and intelligent alerts</p>
+          <div class="feature-badge">Real-time</div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="feature-card ai-insights" routerLink="/ai-analytics" [queryParams]="{tab: 'insights'}">
+          <div class="feature-icon">💡</div>
+          <h5>AI Insights</h5>
+          <p>Intelligent recommendations and analysis</p>
+          <div class="feature-badge">Smart</div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="feature-card ai-quality" routerLink="/ai-analytics" [queryParams]="{tab: 'quality'}">
+          <div class="feature-icon">✅</div>
+          <h5>Data Quality</h5>
+          <p>Automated assessment and improvement suggestions</p>
+          <div class="feature-badge">Automated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions Section -->
+  <div class="quick-actions-section mb-4">
+    <h3 class="section-title">
+      <i class="fas fa-bolt text-warning"></i>
+      Quick Actions
+    </h3>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="action-card" routerLink="/ai-test">
+          <i class="fas fa-flask"></i>
+          <span>AI Test Lab</span>
+          <small>Test AI features</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="action-card" routerLink="/reporting">
+          <i class="fas fa-chart-bar"></i>
+          <span>Generate Reports</span>
+          <small>Create new reports</small>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="action-card" routerLink="/ai-analytics">
+          <i class="fas fa-brain"></i>
+          <span>AI Dashboard</span>
+          <small>View AI insights</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Overview -->
+  <div class="system-overview-section">
+    <h3 class="section-title">
+      <i class="fas fa-tachometer-alt text-info"></i>
+      System Overview
+    </h3>
+    <div class="row">
+      <div class="col-md-3">
+        <div class="metric-card">
+          <div class="metric-icon">📊</div>
+          <div class="metric-value">{{ totalReports || '---' }}</div>
+          <div class="metric-label">Total Reports</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card">
+          <div class="metric-icon">👥</div>
+          <div class="metric-value">{{ activeUsers || '---' }}</div>
+          <div class="metric-label">Active Users</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card">
+          <div class="metric-icon">🏢</div>
+          <div class="metric-value">{{ departments || '---' }}</div>
+          <div class="metric-label">Departments</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card">
+          <div class="metric-icon">🧠</div>
+          <div class="metric-value">{{ aiInsights || '---' }}</div>
+          <div class="metric-label">AI Insights</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Section -->
+  <div class="recent-activity-section mt-4">
+    <h3 class="section-title">
+      <i class="fas fa-clock text-secondary"></i>
+      Recent Activity
+    </h3>
+    <div class="activity-timeline">
+      <div class="activity-item">
+        <div class="activity-icon ai-icon">🧠</div>
+        <div class="activity-content">
+          <strong>AI Analysis Complete</strong>
+          <p>Generated new insights for Q3 performance data</p>
+          <small class="text-muted">2 minutes ago</small>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon report-icon">📊</div>
+        <div class="activity-content">
+          <strong>New Report Generated</strong>
+          <p>Monthly department performance report completed</p>
+          <small class="text-muted">15 minutes ago</small>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-icon alert-icon">🚨</div>
+        <div class="activity-content">
+          <strong>Anomaly Detected</strong>
+          <p>Performance irregularity in Sales department</p>
+          <small class="text-muted">1 hour ago</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

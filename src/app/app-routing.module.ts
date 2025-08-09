@@ -6,17 +6,26 @@ import { ReportingComponent } from './reporting/reporting.component';
 import { StaffUserComponent } from './staff-user/staff-user.component';
 import { AuthComponent } from './core/auth/auth.component';
 import { RegisterComponent } from './register/register.component';
+import { AiAnalyticsComponent } from './ai-analytics/ai-analytics.component';
+import { AiTestComponent } from './ai-test/ai-test.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/auth', pathMatch: 'full' },
   { path: 'auth', component: AuthComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'ai-test', component: AiTestComponent }, // Temporary test route
   { 
     path: 'dashboard', 
     component: DashboardComponent, 
     canActivate: [AuthGuard],
     data: { role: 'Admin' }
+  },
+  { 
+    path: 'ai-analytics', 
+    component: AiAnalyticsComponent, 
+    canActivate: [AuthGuard],
+    data: { roles: ['Admin', 'Executive', 'DepartmentLead'] }
   },
   { 
     path: 'department-lead', 

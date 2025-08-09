@@ -45,6 +45,12 @@
       
       <!-- Actions Section -->
       <div class="header-actions">
+        <!-- AI Analytics Quick Access -->
+        <button class="btn btn-ai-primary" routerLink="/ai-analytics">
+          <i class="fas fa-brain"></i>
+          AI Analytics
+        </button>
+        
         <!-- Time Range Selector -->
         <div class="action-group">
           <label class="action-label" for="timeframe-select">Time Range</label>
@@ -193,6 +199,67 @@
 
   <!-- Dashboard Content -->
   <div *ngIf="dashboardData && !error" class="dashboard-content">
+    
+    <!-- AI Insights Section -->
+    <div class="ai-insights-section mb-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card ai-insights-card">
+            <div class="card-header bg-gradient-ai text-white">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-brain me-2"></i>
+                  <h5 class="mb-0">AI-Powered Executive Insights</h5>
+                </div>
+                <button class="btn btn-outline-light btn-sm" routerLink="/ai-analytics">
+                  View Full Analytics
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="ai-feature-card">
+                    <div class="ai-feature-icon predictive">
+                      <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h6>Predictive Analytics</h6>
+                    <p class="text-muted small">Forecast trends and performance metrics</p>
+                    <button class="btn btn-sm btn-outline-primary" routerLink="/ai-analytics" [queryParams]="{tab: 'predictions'}">
+                      Explore Predictions
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="ai-feature-card">
+                    <div class="ai-feature-icon anomaly">
+                      <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h6>Anomaly Detection</h6>
+                    <p class="text-muted small">Identify unusual patterns and outliers</p>
+                    <button class="btn btn-sm btn-outline-warning" routerLink="/ai-analytics" [queryParams]="{tab: 'anomalies'}">
+                      View Anomalies
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="ai-feature-card">
+                    <div class="ai-feature-icon insights">
+                      <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h6>Smart Insights</h6>
+                    <p class="text-muted small">AI-generated business recommendations</p>
+                    <button class="btn btn-sm btn-outline-success" routerLink="/ai-analytics" [queryParams]="{tab: 'insights'}">
+                      Get Insights
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- KPI Cards Row -->
     <div class="row mb-4">

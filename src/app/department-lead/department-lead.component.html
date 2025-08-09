@@ -25,6 +25,12 @@
             <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
           </button>
           
+          <!-- AI Analytics Button -->
+          <button class="btn btn-ai-primary me-2" routerLink="/ai-analytics">
+            <i class="fas fa-brain"></i>
+            AI Analytics
+          </button>
+          
           <!-- Export Dropdown -->
           <div class="btn-group">
             <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" [disabled]="isExporting">
@@ -79,6 +85,55 @@
 
   <!-- Dashboard Content -->
   <div *ngIf="dashboardData && !error">
+    
+    <!-- AI Insights for Department Lead -->
+    <div class="ai-insights-section mb-4">
+      <div class="card ai-insights-card">
+        <div class="card-header bg-gradient-ai text-white">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-robot me-2"></i>
+              <h5 class="mb-0">AI-Powered Department Insights</h5>
+            </div>
+            <button class="btn btn-outline-light btn-sm" routerLink="/ai-analytics">
+              Advanced AI Analytics
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="ai-feature-highlight">
+                <div class="ai-icon-wrapper">
+                  <i class="fas fa-users-cog text-primary"></i>
+                </div>
+                <div class="ai-content">
+                  <h6>Team Performance Predictions</h6>
+                  <p class="text-muted small">AI-driven forecasts for your department's performance</p>
+                  <button class="btn btn-sm btn-outline-primary" routerLink="/ai-analytics" [queryParams]="{tab: 'predictions', dept: userDepartment}">
+                    View Predictions
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="ai-feature-highlight">
+                <div class="ai-icon-wrapper">
+                  <i class="fas fa-search-plus text-warning"></i>
+                </div>
+                <div class="ai-content">
+                  <h6>Anomaly Detection</h6>
+                  <p class="text-muted small">Identify unusual patterns in department data</p>
+                  <button class="btn btn-sm btn-outline-warning" routerLink="/ai-analytics" [queryParams]="{tab: 'anomalies', dept: userDepartment}">
+                    Check Anomalies
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs dashboard-tabs">

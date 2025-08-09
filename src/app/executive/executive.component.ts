@@ -8,6 +8,7 @@ import { BarChartComponent } from '../shared/components/charts/bar-chart.compone
 import { LineChartComponent } from '../shared/components/charts/line-chart.component';
 import { HttpClient } from '@angular/common/http';
 import { AnalyticsService } from '../core/services/analytics.service';
+import { AdvancedAnalyticsService } from '../core/services/advanced-analytics.service';
 import { ExportService } from '../core/services/export.service';
 import { AuthService } from '../core/services/auth.service';
 import {
@@ -19,6 +20,11 @@ import {
   TrendDirection,
   AlertSeverity
 } from '../core/models/analytics.model';
+import {
+  AIInsightsDashboardDto,
+  AIRecommendationDto,
+  PredictionResultDto
+} from '../core/models/ai-analytics.model';
 import { ExportFormat } from '../core/models/export.model';
 import { environment } from '../../environments/environment';
 
