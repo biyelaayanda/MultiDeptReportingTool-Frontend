@@ -11,13 +11,20 @@ export class TokenInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = this.authService.getToken();
     
+    let clonedRequest = req;
+    
+    // Always add X-API-Version header
+    clonedRequest = req.clone({
+      headers: req.headers.set('X-API-Version', '1.0')
+    });
+    
+    // Add Authorization header if token exists and user is authenticated
     if (token && this.authService.isAuthenticated()) {
-      const clonedRequest = req.clone({
-        headers: req.headers.set('Authorization', `Bearer ${token}`)
+      clonedRequest = clonedRequest.clone({
+        headers: clonedRequest.headers.set('Authorization', `Bearer ${token}`)
       });
-      return next.handle(clonedRequest);
     }
     
-    return next.handle(req);
+    return next.handle(clonedRequest);
   }
 }
