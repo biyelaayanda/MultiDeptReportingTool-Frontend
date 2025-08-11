@@ -28,7 +28,7 @@ export class AdvancedAnalyticsService {
 
   // AI Predictions
   getAdvancedPredictions(request: any): Observable<PredictionResultDto[]> {
-    return this.http.post<PredictionResultDto[]>(`${this.apiUrl}/predictions/advanced`, request);
+    return this.http.post<PredictionResultDto[]>(`${this.apiUrl}/predictions/batch`, request);
   }
 
   getDepartmentPerformancePrediction(request: any): Observable<PredictionResultDto[]> {

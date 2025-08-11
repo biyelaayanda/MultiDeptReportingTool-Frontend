@@ -101,22 +101,20 @@ export interface AIInsightsDashboardDto {
   dateRange: any;
   keyPredictions: DepartmentPerformancePredictionDto[];
   recentAnomalies: AnomalyDto[];
-  seasonalInsights: SeasonalPatternDto;
+  seasonalInsights: any;
+  departmentClusters: DepartmentClusterDto[];
   aiRecommendations: AIRecommendationDto[];
-  dataQualityScore: number;
-  modelPerformance: { [key: string]: number };
-  alertsSummary: AlertsSummaryDto;
+  dataQualityScores: { [key: string]: number };
 }
 
 export interface DepartmentPerformancePredictionDto {
   departmentName: string;
-  currentPerformance: number;
-  predictedPerformance: number;
-  trend: 'Improving' | 'Declining' | 'Stable';
-  confidenceScore: number;
-  timeframe: string;
-  keyDrivers: string[];
-  riskFactors: string[];
+  performanceProjection: any[];
+  predictedEfficiency: number;
+  budgetUtilizationForecast: number;
+  riskScore: number;
+  recommendedActions: string[];
+  keyMetricsPrediction: { [key: string]: number };
 }
 
 export interface SeasonalPatternDto {

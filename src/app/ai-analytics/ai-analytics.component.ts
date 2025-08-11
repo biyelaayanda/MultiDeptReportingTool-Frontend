@@ -332,4 +332,17 @@ export class AiAnalyticsComponent implements OnInit, OnDestroy {
         break;
     }
   }
+
+  // Utility methods for risk assessment
+  getRiskClass(riskScore: number): string {
+    if (riskScore < 0.3) return 'text-success';
+    if (riskScore < 0.7) return 'text-warning';
+    return 'text-danger';
+  }
+
+  getRiskLevel(riskScore: number): string {
+    if (riskScore < 0.3) return 'Low';
+    if (riskScore < 0.7) return 'Medium';
+    return 'High';
+  }
 }

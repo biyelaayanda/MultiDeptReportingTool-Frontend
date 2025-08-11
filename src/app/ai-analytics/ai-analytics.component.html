@@ -87,22 +87,21 @@
           <div class="card metric-card">
             <div class="card-body">
               <h6 class="card-title">{{prediction.departmentName}}</h6>
-              <h3 class="text-primary">{{prediction.predictedPerformance | number:'1.1-1'}}%</h3>
+              <h3 class="text-primary">{{prediction.predictedEfficiency | number:'1.1-1'}}%</h3>
               <div class="d-flex align-items-center">
-                <i class="fas" [ngClass]="getTrendIcon(prediction.trend)" 
-                   [ngClass]="getTrendClass(prediction.trend)"></i>
-                <span class="ms-1 small" [ngClass]="getTrendClass(prediction.trend)">
-                  {{prediction.trend}}
+                <i class="fas fa-chart-line" [ngClass]="getRiskClass(prediction.riskScore)"></i>
+                <span class="ms-1 small" [ngClass]="getRiskClass(prediction.riskScore)">
+                  Risk: {{getRiskLevel(prediction.riskScore)}}
                 </span>
               </div>
               <div class="progress mt-2" style="height: 4px;">
                 <div class="progress-bar" 
-                     [style.width.%]="prediction.confidenceScore * 100"
-                     [ngClass]="prediction.confidenceScore > 0.8 ? 'bg-success' : 
-                               prediction.confidenceScore > 0.6 ? 'bg-warning' : 'bg-danger'">
+                     [style.width.%]="(1 - prediction.riskScore) * 100"
+                     [ngClass]="prediction.riskScore < 0.3 ? 'bg-success' : 
+                               prediction.riskScore < 0.7 ? 'bg-warning' : 'bg-danger'">
                 </div>
               </div>
-              <small class="text-muted">{{prediction.confidenceScore * 100 | number:'1.0-0'}}% confidence</small>
+              <small class="text-muted">Budget Forecast: {{prediction.budgetUtilizationForecast | number:'1.0-0'}}%</small>
             </div>
           </div>
         </div>
@@ -170,17 +169,11 @@
             </div>
             <div class="card-body">
               <div class="row text-center">
-                <div class="col-md-3">
-                  <h4 [ngClass]="getQualityScoreClass(dashboardData.dataQualityScore)">
-                    {{dashboardData.dataQualityScore * 100 | number:'1.1-1'}}%
+                <div class="col-md-3" *ngFor="let quality of dashboardData.dataQualityScores | keyvalue">
+                  <h4 [ngClass]="getQualityScoreClass(quality.value)">
+                    {{quality.value * 100 | number:'1.1-1'}}%
                   </h4>
-                  <p class="text-muted">Data Quality</p>
-                </div>
-                <div class="col-md-3" *ngFor="let model of dashboardData.modelPerformance | keyvalue">
-                  <h4 [ngClass]="getQualityScoreClass(model.value)">
-                    {{model.value * 100 | number:'1.1-1'}}%
-                  </h4>
-                  <p class="text-muted">{{model.key}} Model</p>
+                  <p class="text-muted">{{quality.key | titlecase}} Quality</p>
                 </div>
               </div>
             </div>
